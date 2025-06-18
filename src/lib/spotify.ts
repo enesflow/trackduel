@@ -1,6 +1,6 @@
 import { SpotifyPlaylist } from "@/types/spotify";
 
-async function fetchNextJSAPIForSpotify<T>(
+export async function fetchNextJSAPIForSpotify<T>(
   name: string,
   providerAccessToken: string,
 ): Promise<T> {

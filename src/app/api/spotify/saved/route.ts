@@ -19,7 +19,7 @@ function getAuthorizationHeader(providerAccessToken: string): HeadersInit {
   };
 }
 
-async function getUserSavedSongsServer(
+export async function getUserSavedSongsServer(
   providerAccessToken: string,
 ): Promise<SpotifyPlaylist> {
   const response = await fetch(`${SPOTIFY_API_BASE_URL}/me/tracks?limit=20`, {
