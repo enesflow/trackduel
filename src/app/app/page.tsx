@@ -1,27 +1,19 @@
 "use client";
 
-import { account } from "@/lib/appwrite";
+import { getUserSavedSongs } from "@/lib/spotify";
 import { useLoggedInUser } from "@/lib/UserContext";
+import { useState } from "react";
 
 export default function HomePage() {
+  const [songs, setSongs] = useState<string[]>([]);
   const user = useLoggedInUser();
 
   // Example: fetch favorite songs from Spotify API route and log the response
   async function handleLoadSongs() {
     try {
       const session = await user.getSession();
-      // etc.
-      const res = await fetch(
-        new URL(
-          `/api/spotify?providerAccessToken=${session?.providerAccessToken}`,
-          window.location.origin
-        )
-      );
-      const data = await res.json();
-      console.log(
-        "Favorite songs:",
-        data.map((song) => song.track.name)
-      );
+      const data = await getUserSavedSongs(session?.providerAccessToken);
+      setSongs(data.map((item: any) => item.track.name)); // Adjust based on actual data structure
     } catch (err) {
       console.error("Error loading favorite songs:", err);
     }
@@ -32,6 +24,12 @@ export default function HomePage() {
       <p>Welcome to the Home Page, {user.current?.name}!</p>
       <button onClick={() => user.logout()}>Logout</button>
       <button onClick={handleLoadSongs}>Load Favorite Songs</button>
+
+      <ul>
+        {songs.map((song) => (
+          <li key={song}>{song}</li>
+        ))}
+      </ul>
     </div>
   );
 }

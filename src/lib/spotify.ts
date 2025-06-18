@@ -1,23 +1,12 @@
-// Spotify API helper
+import { SpotifyPlaylist } from "@/types/spotify";
 
-// Placeholder tokens; replace with actual providerRefreshToken and providerAccessToken
-// Type for saved tracks response items
-interface SpotifySavedTrack {
-  added_at: string;
-  track: any; // Replace 'any' with the Spotify Track object type if available
-}
-
-/**
- * Fetches the user's saved (favorited) tracks from Spotify.
- * Uses the providerAccessToken for authorization.
- */
-export async function getUserFavoriteSongs(
+async function fetchNextJSAPIForSpotify<T>(
+  name: string,
   providerAccessToken: string,
-): Promise<SpotifySavedTrack[]> {
-  console.error("providerAccessToken:", providerAccessToken);
-  const response = await fetch('https://api.spotify.com/v1/me/tracks?limit=50', {
+): Promise<T> {
+  const response = await fetch(`/api/spotify/${name}?providerAccessToken=${providerAccessToken}`, {
     headers: {
-      Authorization: `Bearer ${providerAccessToken}`,
+      "Content-Type": "application/json",
     },
   });
 
@@ -29,6 +18,18 @@ export async function getUserFavoriteSongs(
     throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json();
-  return data.items as SpotifySavedTrack[];
+  return response.json() as Promise<T>;
+}
+
+/**
+ * Fetches the user's saved (favorited) tracks from Spotify.
+ * Uses the providerAccessToken for authorization.
+ */
+export async function getUserSavedSongs(
+  providerAccessToken?: string,
+): Promise<SpotifyPlaylist> {
+  if (!providerAccessToken) {
+    throw new Error("Missing providerAccessToken");
+  }
+  return await fetchNextJSAPIForSpotify<SpotifyPlaylist>("saved", providerAccessToken);
 }
