@@ -1,20 +1,21 @@
 "use client";
-import { OAuthProvider } from "appwrite";
+import { Models, OAuthProvider } from "appwrite";
 import { createContext, useContext, useEffect, useState } from "react";
 import { account } from "./appwrite";
 
-type User = null | Record<string, any>; // You can replace Record<string, any> with the actual user/session type from Appwrite if available
-
+type User = Models.User<Models.Preferences>;
 const UserContext = createContext<{
-  current: User;
+  current: User | null;
   loading: boolean;
   loginWithSpotify: () => void;
   logout: () => Promise<void>;
+  getSession: () => Promise<Models.Session | null>;
 }>({
   current: null,
   loading: false,
   loginWithSpotify: () => {},
   logout: async () => {},
+  getSession: async () => null,
 });
 
 export function useUser() {
@@ -37,7 +38,7 @@ interface UserProviderProps {
 
 export function UserProvider(props: UserProviderProps) {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   async function logout() {
     await account.deleteSession("current");
@@ -47,7 +48,7 @@ export function UserProvider(props: UserProviderProps) {
   async function init() {
     try {
       const loggedIn = await account.get();
-      console.log("Logged in user:", loggedIn);
+
       setUser(loggedIn);
     } catch (err) {
       console.error("Error fetching user:", err);
@@ -59,11 +60,21 @@ export function UserProvider(props: UserProviderProps) {
 
   async function loginWithSpotify() {
     await account.createOAuth2Session(
-      OAuthProvider.Spotify, // provider
-      "http://localhost:3000/app" // redirect here on success
-      //"http://localhost:3000/404" // redirect here on failure
-      // ["repo", "user"] // scopes (optional)
+      OAuthProvider.Spotify,
+      "http://localhost:3000/app",
+      "http://localhost:3000/404",
+      ["user-library-read"]
     );
+  }
+
+  async function getSession() {
+    try {
+      const session = await account.getSession("current");
+      return session;
+    } catch (err) {
+      console.error("Error fetching current session:", err);
+      return null;
+    }
   }
 
   useEffect(() => {
@@ -77,6 +88,7 @@ export function UserProvider(props: UserProviderProps) {
         logout,
         loading,
         loginWithSpotify,
+        getSession,
       }}
     >
       {props.children}
