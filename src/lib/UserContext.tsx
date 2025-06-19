@@ -74,7 +74,8 @@ export function UserProvider(props: UserProviderProps) {
     account.createOAuth2Session(
       OAuthProvider.Google,
       "http://localhost:3000/app/add",
-      "http://localhost:3000/404"
+      "http://localhost:3000/404",
+      ["https://www.googleapis.com/auth/youtube.readonly"]
     );
   }
 
