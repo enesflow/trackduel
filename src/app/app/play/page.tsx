@@ -123,13 +123,24 @@ export default function PlayPage() {
     const expectedFirst = expected(firstSong.elo, secondSong.elo);
     const expectedSecond = expected(secondSong.elo, firstSong.elo);
 
+    const eloNoiseRange = 5; // maximum ± range for random drift
+
+    const rawFirst =
+      firstSong.elo +
+      K * ((who === "first" ? 1 : 0) - expected(firstSong.elo, secondSong.elo));
+    const rawSecond =
+      secondSong.elo +
+      K *
+        ((who === "second" ? 1 : 0) - expected(secondSong.elo, firstSong.elo));
+
+    // apply random drift and ensure minimum of 100
     const newFirstElo = Math.max(
-      firstSong.elo + K * ((who === "first" ? 1 : 0) - expectedFirst),
-      100
+      100,
+      Math.round(rawFirst + (Math.random() * 2 - 1) * eloNoiseRange)
     );
     const newSecondElo = Math.max(
-      secondSong.elo + K * ((who === "second" ? 1 : 0) - expectedSecond),
-      100
+      100,
+      Math.round(rawSecond + (Math.random() * 2 - 1) * eloNoiseRange)
     );
 
     // Optimistically update UI, then update DB in background
