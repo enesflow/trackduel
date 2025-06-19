@@ -25,10 +25,10 @@ export { adminClient, adminAccount, adminDatabases, adminUsers };
 
 /**
  * Represents a song entry in the database with associated metadata.
- * The user_id and spotify_id together have a unique index to prevent duplicate entries by the same user.
+ * The user_id and provider_id together have a unique index to prevent duplicate entries by the same user.
  *
  * @property user_id - The unique identifier of the user who added the song.
- * @property spotify_id - The Spotify ID of the song.
+ * @property provider_id - The Spotify ID of the song.
  * @property name - The name/title of the song.
  * @property artists - The artist(s) of the song, as a string.
  * @property image_url - The URL to the song's album artwork or image.
