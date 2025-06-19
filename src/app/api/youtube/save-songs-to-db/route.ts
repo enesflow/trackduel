@@ -8,6 +8,14 @@ import { NextResponse } from 'next/server';
 
 export const runtime = "edge";
 
+function removeTopicFromEnd(title: string): string {
+  const topicSuffix = " - Topic";
+  if (title.endsWith(topicSuffix)) {
+    return title.slice(0, -topicSuffix.length);
+  }
+  return title;
+}
+
 export async function GET(request: Request) {
   const { providerAccessToken, userID } = await getAndVerifyProviderAccessTokenFromHeader(request.headers);
   if (!providerAccessToken) return nextError(MISSING_TOKEN);
@@ -43,7 +51,7 @@ export async function GET(request: Request) {
         || item.snippet.thumbnails.high?.url
         || item.snippet.thumbnails.medium?.url
         || item.snippet.thumbnails.default.url,
-      name: item.snippet.title,
+      name: removeTopicFromEnd(item.snippet.title),
     };
   }));
   console.log(`Successfully saved ${successCount} songs to the database.`);
