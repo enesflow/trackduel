@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
-import { Music, Check, Shuffle, Trash, Rocket, Merge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardHeader,
   CardContent,
   CardFooter,
+  CardHeader,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/sonner";
+import { Merge, Music, Rocket, Shuffle, Trash } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 // --- new imports for database and user context ---
 import { databases } from "@/lib/appwrite";
@@ -276,25 +275,29 @@ export default function PlayPage() {
                   className="cursor-pointer transition-all duration-300 hover:scale-105 pt-0"
                 >
                   <CardHeader className="p-0 relative">
-                    <Image
-                      src={
-                        song.image_url ||
-                        "/placeholder.svg?height=300&width=300"
-                      }
-                      alt={`${song.album || "Album"} cover`}
-                      width={300}
-                      height={300}
-                      className="w-full h-48 object-cover rounded-t-md md:aspect-square md:h-auto"
-                    />
+                    <div className="relative w-full h-48 md:aspect-square md:h-auto overflow-hidden rounded-t-md">
+                      <Image
+                        src={
+                          song.image_url ||
+                          "/placeholder.svg?height=300&width=300"
+                        }
+                        alt={`${song.album || "Album"} cover`}
+                        fill
+                        className="object-cover"
+                        style={{ objectFit: "cover" }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/40" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        <h3 className="text-xl font-extrabold tracking-tight truncate drop-shadow-lg">
+                          {song.name}
+                        </h3>
+                        <p className="text-lg truncate drop-shadow-lg opacity-90">
+                          {song.artists || "Unknown Artist"}
+                        </p>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent className="space-y-1">
-                    <h3 className="text-xl font-bold truncate">{song.name}</h3>
-                    <p className="text-lg text-gray-700 truncate">
-                      {song.artists || "Unknown Artist"}
-                    </p>
-                    <Badge variant="secondary">{song.album_name}</Badge>
-                  </CardContent>
-                  <CardFooter className="flex flex-col md:flex-row gap-4">
+                  <CardFooter className="flex flex-row flex-wrap gap-4">
                     <Button
                       variant="destructive"
                       onClick={(e) => {
@@ -304,7 +307,7 @@ export default function PlayPage() {
                       className="w-full flex-1"
                     >
                       <Trash className="m-1" />
-                      Remove Song
+                      Remove
                     </Button>
                     <Button
                       onClick={(e) => {
@@ -313,7 +316,8 @@ export default function PlayPage() {
                       }}
                       className="w-full flex-1"
                     >
-                      <Rocket className="m-1" />I love this song! Boost it!
+                      <Rocket className="m-1" />
+                      Boost!
                     </Button>
                   </CardFooter>
                 </Card>
