@@ -1,5 +1,6 @@
 import { adminDatabases, DatabaseInputSong } from '@/lib/appwriteAdmin';
 import { ID, Permission, Query, Role } from 'node-appwrite';
+import { MAX_SONGS_FOR_USER } from './constants';
 
 /**
  * THIS IS SUPPOSED TO BE CALLED ON THE SERVER. Saves an array of songs to the database for a specific user.
@@ -34,6 +35,11 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
       ...song,
       $id: ID.unique(),
     })) satisfies (DatabaseInputSong & { $id: string })[];
+  const totalSongsLeft = MAX_SONGS_FOR_USER - currentSongs.total;
+  if (totalSongsLeft <= 0) {
+    console.warn(`User ${userID} has reached the maximum number of songs (${MAX_SONGS_FOR_USER}). No new songs will be saved.`);
+    return 0; // No songs saved because the user has reached the limit
+  }
   try {
     const result = await adminDatabases.createDocument(
       "db",
@@ -41,7 +47,7 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
       ID.unique(),
       {
         user_id: userID,
-        songs: songsWithIDs,
+        songs: songsWithIDs.slice(0, totalSongsLeft), // Limit to the number of songs left to save
       },
       [Permission.read(Role.user(userID)),
       Permission.update(Role.user(userID)),
