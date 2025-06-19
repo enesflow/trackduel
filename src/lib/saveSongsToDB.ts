@@ -24,7 +24,14 @@ export async function saveSongsToDB(
       "/spotify/save-songs-to-db",
       user
     );
-  } else {
+  }
+  else if (session.provider === "google") {
+    return await fetchNextJSAPIWithToken<string[]>(
+      "/youtube/save-songs-to-db",
+      user
+    );
+  }
+  else {
     throw new Error("Unsupported provider for saving songs.");
   }
 }

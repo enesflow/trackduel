@@ -10,8 +10,8 @@ export async function throwErrorIfNotOk(response: Response): Promise<Response & 
   if (!response.ok) {
     const errorBody = await response.text();
     console.error("ERROR ON PATH:", response.url);
-    console.error('Spotify API error:', response.status, response.statusText, errorBody);
-    throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    console.error('API error:', response.status, response.statusText, errorBody);
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
   }
   return response as Response & { ok: true; };
 }
