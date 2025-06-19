@@ -106,7 +106,7 @@ export default function AddSongsPage() {
                 CardDescriptionProvider["spotify"]}
               {user.session.provider !== "google" &&
                 CardDescriptionProvider["google"]}
-              , please log out and log back in with your Spotify account.
+              , please log out and log back in with that account.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
