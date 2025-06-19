@@ -44,14 +44,14 @@ export async function GET(request: Request) {
       provider_id: item.contentDetails.videoId,
       provider: 'google',
       album_name: item.snippet.title,
-      artists: item.snippet.videoOwnerChannelTitle,
+      artists: removeTopicFromEnd(item.snippet.channelTitle),
       elo: 1000,
       image_url: item.snippet.thumbnails.maxres?.url
         || item.snippet.thumbnails.standard?.url
         || item.snippet.thumbnails.high?.url
         || item.snippet.thumbnails.medium?.url
         || item.snippet.thumbnails.default.url,
-      name: removeTopicFromEnd(item.snippet.title),
+      name: item.snippet.title,
     };
   }));
   console.log(`Successfully saved ${successCount} songs to the database.`);
