@@ -3,7 +3,6 @@ import { throwErrorIfNotOk } from "./throwErrorIfNotOk";
 
 const SPOTIFY_API_BASE_URL = 'https://api.spotify.com/v1';
 
-
 /**
  * This function should be called on the server. Fetches data from the Spotify Web API at the specified path using the provided access token.
  *
