@@ -39,7 +39,10 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
             Permission.update(Role.user(userID)),
             Permission.delete(Role.user(userID)),
           ],
-        )
+        ).catch((error) => {
+          console.error("Error saving song to DB:", error);
+          throw error; // rethrow to handle in Promise.allSettled
+        })
       )
     );
     successCount += results.filter(r => r.status === 'fulfilled').length;
