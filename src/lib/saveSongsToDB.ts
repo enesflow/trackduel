@@ -1,6 +1,5 @@
 import { adminDatabases, DatabaseInputSong } from '@/lib/appwriteAdmin';
 import { ID, Permission, Role } from 'node-appwrite';
-import { safeID } from './safeID';
 
 /**
  * THIS IS SUPPOSED TO BE CALLED ON THE SERVER. Saves an array of songs to the database for a specific user.
@@ -18,36 +17,24 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
   if (!songs || songs.length === 0) {
     throw new Error("No songs provided to save to the database.");
   }
+  // New efficient implementation
+  const result = await adminDatabases.createDocument(
+    "db",
+    "batch",
+    ID.unique(),
+    {
+      user_id: userID,
+      songs: songs.map(song => ({
+        ...song,
+        $id: ID.unique(), // Ensure each song has a unique ID
+      })) satisfies (DatabaseInputSong & { $id: string })[],
+    },
+    [Permission.read(Role.user(userID)),
+    Permission.update(Role.user(userID)),
+    Permission.delete(Role.user(userID))],
+  );
 
-  // process in batches to limit concurrency
-  const BATCH_SIZE = 20;
-  let successCount = 0;
+  console.log("Batch save successful");
+  return result.songs.length;
 
-  for (let i = 0; i < songs.length; i += BATCH_SIZE) {
-    const batch = songs.slice(i, i + BATCH_SIZE);
-    const results = await Promise.allSettled(
-      batch.map(async (song) =>
-        adminDatabases.createDocument(
-          "db",
-          "songs",
-          await safeID.unique(song),
-          {
-            ...song,
-            user_id: userID,
-          },
-          [
-            Permission.read(Role.user(userID)),
-            Permission.update(Role.user(userID)),
-            Permission.delete(Role.user(userID)),
-          ],
-        ).catch((error) => {
-          console.error("Error saving song to DB:", error);
-          throw error; // rethrow to handle in Promise.allSettled
-        })
-      )
-    );
-    successCount += results.filter(r => r.status === 'fulfilled').length;
-  }
-
-  return successCount;
 }
