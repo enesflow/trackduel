@@ -29,13 +29,18 @@ export async function getVideoIDFromSearchQuery(
   searchQuery: string,
   user: UserContextType
 ): Promise<string | null> {
-  const encodedQuery = encodeURIComponent(searchQuery);
-  const response = await fetchNextJSAPIWithToken<{
-    id: string;
-  }>(`/youtube/search?query=${encodedQuery}`, user);
-  if (!response.id) {
-    console.warn("No video found for the search query:", searchQuery);
+  try {
+    const encodedQuery = encodeURIComponent(searchQuery);
+    const response = await fetchNextJSAPIWithToken<{
+      id: string;
+    }>(`/youtube/search?query=${encodedQuery}`, user);
+    if (!response.id) {
+      console.warn("No video found for the search query:", searchQuery);
+      return null;
+    }
+    return response.id;
+  } catch (error) {
+    console.error("Error fetching video ID for query:", searchQuery, error);
     return null;
   }
-  return response.id;
 }
