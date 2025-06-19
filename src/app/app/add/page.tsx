@@ -20,6 +20,10 @@ const Logos: Record<Provider, React.ReactNode> = {
   spotify: <SiSpotify className="w-6 h-6 text-green-500" />,
   google: <SiYoutubemusic className="w-6 h-6 text-red-500" />,
 };
+const CardDescriptionProvider: Record<Provider, React.ReactNode> = {
+  spotify: <strong className="text-green-600">Spotify</strong>,
+  google: <strong className="text-red-600">YouTube Music</strong>,
+};
 const Names: Record<Provider, string> = {
   spotify: "Spotify",
   google: "YouTube Music",
@@ -87,6 +91,13 @@ export default function AddSongsPage() {
             <CardDescription>
               Import all your saved songs and liked tracks from{" "}
               {Names[sessionProvider]}
+              <br />
+              To import from{" "}
+              {sessionProvider !== "spotify" &&
+                CardDescriptionProvider["spotify"]}
+              {sessionProvider !== "google" &&
+                CardDescriptionProvider["google"]}
+              , please log out and log back in with your Spotify account.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
