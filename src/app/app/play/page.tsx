@@ -12,9 +12,12 @@ import YouTubePreview from "@/components/youtubePreview";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
 import { useSongs } from "@/lib/SongsContext";
+import { getVideoIDFromSearchQuery } from "@/lib/youtube";
+import { useLoggedInUser } from "@/lib/UserContext";
 // -------------------------------------------------
 
 export default function PlayPage() {
+  const user = useLoggedInUser();
   const [duelCount, setDuelCount] = useState(0);
   const { toast } = useToast();
   const { songs, setSongs, loading, sortSongsByElo } = useSongs();
@@ -328,9 +331,24 @@ export default function PlayPage() {
                       <Rocket className="m-1" />
                       Boost!
                     </Button>
-                    {song.provider === "google" && (
-                      <YouTubePreview videoId={() => song.provider_id} />
-                    )}
+                    <YouTubePreview
+                      videoId={async () => {
+                        if (song.provider === "google") {
+                          return song.provider_id;
+                        } else if (song.provider === "spotify") {
+                          return await getVideoIDFromSearchQuery(
+                            song.name +
+                              " - " +
+                              song.artists +
+                              " - " +
+                              song.album_name,
+                            user
+                          );
+                        } else {
+                          return null;
+                        }
+                      }}
+                    />
                   </CardFooter>
                 </Card>
               );

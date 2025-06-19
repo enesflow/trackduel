@@ -1,5 +1,7 @@
 import { getAuthorizationHeader } from "@/lib/authorizationHeader";
 import { throwErrorIfNotOk } from "./throwErrorIfNotOk";
+import { UserContextType } from "./UserContext";
+import { fetchNextJSAPIWithToken } from '@/lib/fetch';
 
 const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -21,4 +23,19 @@ export async function fetchYouTubeAPI<T>(
   });
   const okResponse = await throwErrorIfNotOk(response);
   return okResponse.json() as Promise<T>;
+}
+
+export async function getVideoIDFromSearchQuery(
+  searchQuery: string,
+  user: UserContextType
+): Promise<string | null> {
+  const encodedQuery = encodeURIComponent(searchQuery);
+  const response = await fetchNextJSAPIWithToken<{
+    id: string;
+  }>(`/youtube/search?query=${encodedQuery}`, user);
+  if (!response.id) {
+    console.warn("No video found for the search query:", searchQuery);
+    return null;
+  }
+  return response.id;
 }

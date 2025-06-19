@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 
 type Props = {
   /** Example: https://www.youtube.com/embed/M7lc1UVf-VE?enablejsapi=1&mute=1 */
-  videoId: () => Promise<string> | string; // function to fetch video ID or direct string
+  videoId: () => Promise<string | null | undefined> | string | null | undefined; // function to fetch video ID or direct string
 };
 
 const PREVIEW_MS = 30_000; // fixed 30-second preview
