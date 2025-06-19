@@ -1,3 +1,4 @@
+import { Provider } from "@/types/provider";
 import { Account, Client, Databases, Models, Users } from "node-appwrite";
 
 const NEXT_PUBLIC_APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
@@ -37,7 +38,7 @@ export { adminClient, adminAccount, adminDatabases, adminUsers };
 export type DatabaseInputSong = {
   user_id: string;
   provider_id: string;
-  provider: "spotify" | "youtube";
+  provider: Provider;
   name: string;
   artists: string;
   image_url: string;

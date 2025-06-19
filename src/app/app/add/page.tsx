@@ -11,19 +11,25 @@ import {
 import { saveSongs } from "@/lib/saveSongs";
 import { useSongs } from "@/lib/SongsContext";
 import { useLoggedInUser } from "@/lib/UserContext";
-import {
-  Check,
-  Download,
-  Loader2,
-  Music,
-  AirplayIcon as Spotify,
-} from "lucide-react";
-import { useState } from "react";
+import { Provider } from "@/types/provider";
+import { Check, Download, Loader2, Music } from "lucide-react";
+import { useEffect, useState } from "react";
+import { SiSpotify, SiYoutubemusic } from "react-icons/si";
+
+const Logos: Record<Provider, React.ReactNode> = {
+  spotify: <SiSpotify className="w-6 h-6 text-green-500" />,
+  google: <SiYoutubemusic className="w-6 h-6 text-red-500" />,
+};
+const Names: Record<Provider, string> = {
+  spotify: "Spotify",
+  google: "YouTube Music",
+};
 
 export default function AddSongsPage() {
   const [transferState, setTransferState] = useState<
     "idle" | "loading" | "success"
   >("idle");
+  const [sessionProvider, setSessionProvider] = useState<Provider | null>(null);
   const user = useLoggedInUser();
   const songs = useSongs();
 
@@ -41,6 +47,17 @@ export default function AddSongsPage() {
     }
   };
 
+  useEffect(() => {
+    user.getSession().then((session) => {
+      if (session && session.provider) {
+        setSessionProvider(session.provider as Provider);
+      }
+    });
+  }, [user]);
+
+  if (!sessionProvider) {
+    return null;
+  }
   return (
     <div className="min-h-screen p-4">
       <div className="w-full max-w-2xl mx-auto">
@@ -51,42 +68,41 @@ export default function AddSongsPage() {
               Import Your Music
             </h1>
           </div>
+          <div className="mt-4">
+            <span className="text-gray-700">Welcome, {user.current.name}!</span>
+          </div>
           <p className="text-gray-600 text-lg">
-            Transfer your saved songs from Spotify to get started
+            Transfer your saved songs from your Library to get started
           </p>
-          {user.current && (
-            <div className="mt-4">
-              <span className="text-gray-700">
-                Welcome, {user.current.name}!
-              </span>
-            </div>
-          )}
         </div>
 
         <Card className="mb-6">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Spotify className="w-6 h-6 text-green-500" />
-              <CardTitle className="text-xl">Spotify Library</CardTitle>
+              {Logos[sessionProvider]}
+              <CardTitle className="text-xl">
+                {Names[sessionProvider]} Library
+              </CardTitle>
             </div>
             <CardDescription>
-              Import all your saved songs and liked tracks from Spotify
+              Import all your saved songs and liked tracks from{" "}
+              {Names[sessionProvider]}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {transferState === "idle" && (
               <Button
                 onClick={startTransfer}
-                className="w-full py-6 text-lg bg-green-600 hover:bg-green-700"
+                className="w-full py-6 text-lg  font-semibold"
+                variant="outline"
               >
-                <Spotify className="w-5 h-5 mr-2" />
-                Import Spotify Library
+                Start Importing
               </Button>
             )}
 
             {transferState === "loading" && (
               <div className="space-y-4">
-                <div className="flex items-center justify-center gap-2 text-green-600">
+                <div className="flex items-center justify-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span className="font-medium">Importing your music...</span>
                 </div>
@@ -95,7 +111,7 @@ export default function AddSongsPage() {
 
             {transferState === "success" && (
               <div className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-2 text-green-600">
+                <div className="flex items-center justify-center gap-2 mb-2">
                   <Check className="w-6 h-6" />
                   <span className="font-semibold text-lg">
                     Import Complete!

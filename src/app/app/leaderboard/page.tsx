@@ -134,7 +134,7 @@ export default function LeaderboardPage() {
                       <div className="space-y-2">
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>

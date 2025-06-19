@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     return {
       user_id: userID,
       provider_id: item.contentDetails.videoId,
-      provider: 'youtube',
+      provider: 'google',
       album_name: item.snippet.title,
       artists: item.snippet.videoOwnerChannelTitle,
       elo: 1000,
