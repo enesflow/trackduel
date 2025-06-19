@@ -14,7 +14,7 @@ import { SiApple, SiGoogle, SiSpotify } from "react-icons/si";
 export default function Login() {
   const user = useUser();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md mx-auto shadow-lg">
         <CardHeader className="text-center space-y-2">
           <LogIn className="mx-auto h-10 w-10 text-purple-600" />

@@ -216,7 +216,7 @@ export default function PlayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-4xl space-y-8">
         {/* Header */}
         <div className="text-center">
