@@ -50,6 +50,23 @@ export function UserProvider(props: UserProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Models.Session | null>(null);
 
+  function createOAuth2Session(provider: OAuthProvider) {
+    const redirectUrl = `${process.env.NEXT_PUBLIC_HOST}/app/add`;
+    const failureUrl = `${process.env.NEXT_PUBLIC_HOST}/404`;
+    let scopes: string[] = [];
+    if (provider === OAuthProvider.Spotify) {
+      scopes = ["user-library-read"];
+    } else if (provider === OAuthProvider.Google) {
+      scopes = ["https://www.googleapis.com/auth/youtube.readonly"];
+    }
+    return account.createOAuth2Session(
+      provider,
+      redirectUrl,
+      failureUrl,
+      scopes
+    );
+  }
+
   async function logout() {
     await account.deleteSession("current");
     setUser(null);
@@ -69,22 +86,11 @@ export function UserProvider(props: UserProviderProps) {
   }
 
   function loginWithSpotify() {
-    console.log("Host is", process.env.NEXT_PUBLIC_HOST);
-    account.createOAuth2Session(
-      OAuthProvider.Spotify,
-      `${process.env.NEXT_PUBLIC_HOST}/app/add`,
-      `${process.env.NEXT_PUBLIC_HOST}/404`,
-      ["user-library-read"]
-    );
+    createOAuth2Session(OAuthProvider.Spotify);
   }
 
   function loginWithGoogle() {
-    account.createOAuth2Session(
-      OAuthProvider.Google,
-      `${process.env.NEXT_PUBLIC_HOST}/app/add`,
-      `${process.env.NEXT_PUBLIC_HOST}/404`,
-      ["https://www.googleapis.com/auth/youtube.readonly"]
-    );
+    createOAuth2Session(OAuthProvider.Google);
   }
 
   async function getSession() {
