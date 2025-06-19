@@ -12,7 +12,6 @@ import YouTubePreview from "@/components/youtubePreview";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
 import { useSongs } from "@/lib/SongsContext";
-import { buildYoutubeEmbedUrl } from "@/lib/youtube";
 // -------------------------------------------------
 
 export default function PlayPage() {
@@ -330,9 +329,7 @@ export default function PlayPage() {
                       Boost!
                     </Button>
                     {song.provider === "google" && (
-                      <YouTubePreview
-                        previewUrl={buildYoutubeEmbedUrl(song.provider_id)}
-                      />
+                      <YouTubePreview videoId={() => song.provider_id} />
                     )}
                   </CardFooter>
                 </Card>
