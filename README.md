@@ -7,6 +7,8 @@ TODO:
 - [ ] Add title, favicon, description etc. to the app
 - [ ] Definitely switch to the new oauth system for appwrite. firefox doesn't work with the current one.
 - [ ] Import progress
+- [ ] "Blind Test" Mode - vote based on audio
+- [ ] Shareable "Top 5" Card
 
 #### Long-term Goals
 
