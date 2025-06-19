@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const data = await fetchYouTubeAPI<YoutubePlaylistItemListResponse>(query, providerAccessToken);
     allItems.push(...data.items);
     pageToken = data.nextPageToken;
-    console.log("PAGE TOKEN IS", pageToken);
+    console.log("Saved", allItems.length, "items so far. Next page token:", pageToken);
   } while (pageToken && allItems.length < MAX_SONGS_FOR_USER);
 
   // trim to MAX_SONGS
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       name: item.snippet.title,
     };
   }));
-
+  console.log(`Successfully saved ${successCount} songs to the database.`);
   return NextResponse.json(
     { message: `${successCount} songs saved to database successfully` },
     { status: 200 }
