@@ -1,28 +1,23 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/components/ui/sonner";
 import { Merge, Music, Rocket, Shuffle, Trash } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 // --- new imports for database and user context ---
+import YouTubePreview from "@/components/youtubePreview";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
 import { useSongs } from "@/lib/SongsContext";
-import YouTubePreview from "@/components/youtubePreview";
 import { buildYoutubeEmbedUrl } from "@/lib/youtube";
 // -------------------------------------------------
 
 export default function PlayPage() {
   const { toast } = useToast();
-  const { songs, setSongs, loading } = useSongs();
+  const { songs, setSongs, loading, sortSongsByElo } = useSongs();
   const [pickedSongs, setPickedSongs] = useState<[number, number] | []>([]);
   // Track pending deletions for undo support via ref
   const pendingDeletions = useRef<
@@ -47,9 +42,29 @@ export default function PlayPage() {
     if (indices.length < 2) return [];
     if (fixedIdx === null) {
       // Pick two random indices
-      for (let i = indices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [indices[i], indices[j]] = [indices[j], indices[i]];
+      const tasteBreaker = Math.random() < 0.2; // 20% chance to break taste
+      if (tasteBreaker) {
+        // pick one song from the first %25 and the second from the last %25
+        // we gotta sort the songs first
+        sortSongsByElo();
+        const percentage = 0.25;
+        const firstQuarter = Math.floor(indices.length * percentage);
+        const lastQuarter = Math.ceil(indices.length * (1 - percentage));
+        const firstIdx = Math.floor(Math.random() * firstQuarter);
+        const secondIdx = Math.floor(
+          Math.random() * (indices.length - lastQuarter) + lastQuarter
+        );
+        // make the order random
+        const _indices = [indices[firstIdx], indices[secondIdx]];
+        if (Math.random() < 0.5) {
+          return [_indices[0], _indices[1]];
+        }
+        return [_indices[1], _indices[0]];
+      } else {
+        for (let i = indices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
       }
       return [indices[0], indices[1]];
     } else {
@@ -60,6 +75,9 @@ export default function PlayPage() {
       // Preserve order: fixedIdx first if it was first, else second
       return [fixedIdx, newIdx];
     }
+  }
+  function pickTwoRandomSongs() {
+    setPickedSongs(pickTwoSongs(songs));
   }
 
   // Helper: replace deleted song in picked pair
@@ -84,10 +102,6 @@ export default function PlayPage() {
     return idxInPair === 0
       ? ([newPair[1], newPair[0]] as [number, number])
       : newPair;
-  }
-
-  function pickTwoRandomSongs() {
-    setPickedSongs(pickTwoSongs(songs));
   }
 
   // Undo a pending deletion
@@ -120,9 +134,6 @@ export default function PlayPage() {
 
     const expected = (a: number, b: number) =>
       1 / (1 + Math.pow(10, (b - a) / 400));
-
-    const expectedFirst = expected(firstSong.elo, secondSong.elo);
-    const expectedSecond = expected(secondSong.elo, firstSong.elo);
 
     const eloNoiseRange = 5; // maximum ± range for random drift
 
@@ -159,19 +170,6 @@ export default function PlayPage() {
     songs[firstIdx!].elo = newFirstElo;
     songs[secondIdx!].elo = newSecondElo;
     setSongs([...songs]);
-    /* toast.info(
-      <div>
-        <div className="font-bold">Great choice!</div>
-        <div>
-          You picked “{who === "first" ? firstSong.name : secondSong.name}”.
-          {boosted && (
-            <span className="ml-2 text-purple-600 font-semibold">
-              (Boosted: x2 points!)
-            </span>
-          )}
-        </div>
-      </div>
-    ); */
     pickTwoRandomSongs();
   }
 
