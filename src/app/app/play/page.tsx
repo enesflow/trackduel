@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { Music, Check, Shuffle, Trash, Rocket } from "lucide-react";
+import { Music, Check, Shuffle, Trash, Rocket, Merge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -215,6 +215,36 @@ export default function PlayPage() {
     );
   }
 
+  async function mergeSongs() {
+    // This can happen if a song is added both from Spotify and YouTube Music
+    // remove the song with the lower ELO, pick two new songs
+    if (pickedSongs.length < 2) return;
+    const [firstIdx, secondIdx] = pickedSongs;
+    const firstSong = songs[firstIdx!];
+    const secondSong = songs[secondIdx!];
+    if (!firstSong || !secondSong) return;
+    const songToKeep = firstSong.elo >= secondSong.elo ? firstSong : secondSong;
+    const songToDelete =
+      firstSong.elo < secondSong.elo ? firstSong : secondSong;
+    // optimistically update UI
+    const newSongs = songs.filter((song) => song.$id !== songToDelete.$id);
+    setSongs(newSongs);
+    setPickedSongs(pickTwoSongs(newSongs));
+    // remove from the db
+    (async () => {
+      await databases.deleteDocument("db", "songs", songToDelete.$id);
+    })();
+    toast.success(
+      <div>
+        <div className="font-bold">Songs merged</div>
+        <div>
+          The song “{songToDelete.name}” has been removed. You kept “
+          {songToKeep.name}”.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-4xl space-y-8">
@@ -232,7 +262,7 @@ export default function PlayPage() {
         </div>
 
         {/* Song cards */}
-        {loading || pickedSongs.length < 2 ? (
+        {loading ? (
           <div className="text-center text-lg text-gray-500">Loading...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -292,10 +322,26 @@ export default function PlayPage() {
 
         {/* Pick new songs button */}
         {!loading && pickedSongs.length === 2 && (
-          <div className="text-center">
-            <Button onClick={pickTwoRandomSongs} variant="secondary">
-              <Shuffle className="m-1" />I can't decide, pick new songs
-            </Button>
+          <div className="flex flex-col md:flex-row justify-center mt-6 gap-4 w-full max-w-xl mx-auto">
+            <div className="flex-1 flex">
+              <Button
+                onClick={pickTwoRandomSongs}
+                variant="secondary"
+                className="w-full"
+              >
+                <Shuffle className="m-1" />I can't decide, pick new songs
+              </Button>
+            </div>
+            <div className="flex-1 flex">
+              <Button
+                onClick={mergeSongs}
+                variant="secondary"
+                className="w-full"
+              >
+                <Merge className="m-1" />
+                These two are the same, merge them
+              </Button>
+            </div>
           </div>
         )}
       </div>
