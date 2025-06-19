@@ -294,13 +294,14 @@ export default function PlayPage() {
                     </p>
                     <Badge variant="secondary">{song.album_name}</Badge>
                   </CardContent>
-                  <CardFooter className="flex justify-around items-center">
+                  <CardFooter className="flex flex-col md:flex-row gap-4">
                     <Button
                       variant="destructive"
                       onClick={(e) => {
                         e.stopPropagation();
                         removeSong(song.$id);
                       }}
+                      className="w-full flex-1"
                     >
                       <Trash className="m-1" />
                       Remove Song
@@ -310,6 +311,7 @@ export default function PlayPage() {
                         e.stopPropagation();
                         win(idx === 0 ? "first" : "second", true);
                       }}
+                      className="w-full flex-1"
                     >
                       <Rocket className="m-1" />I love this song! Boost it!
                     </Button>

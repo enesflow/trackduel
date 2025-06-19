@@ -8,7 +8,7 @@ const nextConfig = {
 };
 
 if (process.env.NODE_ENV === 'development') {
-  await setupDevPlatform();
+  setupDevPlatform().catch(e => console.error(e));
 }
 
 export default nextConfig;

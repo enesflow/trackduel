@@ -62,6 +62,7 @@ export function UserProvider(props: UserProviderProps) {
   }
 
   function loginWithSpotify() {
+    console.log("Host is", process.env.NEXT_PUBLIC_HOST);
     account.createOAuth2Session(
       OAuthProvider.Spotify,
       `${process.env.NEXT_PUBLIC_HOST}/app/add`,
