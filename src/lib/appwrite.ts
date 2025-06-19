@@ -7,9 +7,14 @@ if (!NEXT_PUBLIC_APPWRITE_ENDPOINT || !NEXT_PUBLIC_APPWRITE_PROJECT) {
     "Appwrite endpoint and project ID must be set in environment variables NEXT_PUBLIC_APPWRITE_ENDPOINT and NEXT_PUBLIC_APPWRITE_PROJECT."
   );
 }
-const client = new Client()
-  .setEndpoint(NEXT_PUBLIC_APPWRITE_ENDPOINT)
-  .setProject(NEXT_PUBLIC_APPWRITE_PROJECT);
+
+export function newClient() {
+  return new Client()
+    .setEndpoint(NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+    .setProject(NEXT_PUBLIC_APPWRITE_PROJECT!);
+}
+
+const client = newClient();
 
 const account = new Account(client);
 const databases = new Databases(client);

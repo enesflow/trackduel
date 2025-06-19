@@ -1,4 +1,4 @@
-import { Account, Client, Databases } from "node-appwrite";
+import { Account, Client, Databases, Users } from "node-appwrite";
 
 const NEXT_PUBLIC_APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
 const NEXT_PUBLIC_APPWRITE_PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT;
@@ -15,8 +15,9 @@ const adminClient = new Client()
 
 const adminAccount = new Account(adminClient);
 const adminDatabases = new Databases(adminClient);
+const adminUsers = new Users(adminClient);
 
-export { adminClient, adminAccount, adminDatabases };
+export { adminClient, adminAccount, adminDatabases, adminUsers };
 
 export type DatabaseSong = {
   spotify_id: string;

@@ -4,13 +4,14 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { account } from "./appwrite";
 
 type User = Models.User<Models.Preferences>;
-const UserContext = createContext<{
+export type UserContextType = {
   current: User | null;
   loading: boolean;
   loginWithSpotify: () => void;
   logout: () => Promise<void>;
   getSession: () => Promise<Models.Session | null>;
-}>({
+};
+const UserContext = createContext<UserContextType>({
   current: null,
   loading: false,
   loginWithSpotify: () => {},

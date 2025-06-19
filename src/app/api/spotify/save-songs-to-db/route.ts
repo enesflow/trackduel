@@ -1,20 +1,24 @@
-import { NextResponse } from 'next/server';
-import { getUserSavedSongsServer } from '../saved/route';
 import { adminDatabases, DatabaseSong } from '@/lib/appwriteAdmin';
+import { MISSING_TOKEN, nextError } from '@/lib/errors';
+import { getProviderAccessTokenFromSessionHeader } from "@/lib/getProviderAccessTokenFromSessionHeader";
+import { fetchSpotifyAPI } from '@/lib/spotify';
+import { SpotifyPlaylistWithMetadata } from '@/types/spotify';
+import { NextResponse } from 'next/server';
+
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const providerAccessToken = url.searchParams.get('providerAccessToken');
-  if (!providerAccessToken) {
-    return NextResponse.json({ error: 'Missing tokens in query parameters' }, { status: 401 });
-  }
-  const data = await getUserSavedSongsServer(providerAccessToken);
-  await adminDatabases.upsertDocuments("db", "songs", data.map((item) => ({
+  const providerAccessToken = await getProviderAccessTokenFromSessionHeader(request.headers);
+  if (!providerAccessToken) return nextError(MISSING_TOKEN);
+  const data = await fetchSpotifyAPI<SpotifyPlaylistWithMetadata>(
+    '/me/tracks?limit=50',
+    providerAccessToken
+  );
+  await adminDatabases.upsertDocuments("db", "songs", data.items.map((item) => ({
     spotify_id: item.track.id,
     album_name: item.track.album.name,
     artists: item.track.artists.map((artist) => artist.name).join(', '),
     elo: 0, // Default ELO value, can be updated later
     image_url: item.track.album.images[0]?.url || '',
     name: item.track.name,
-  } satisfies DatabaseSong)))
-  return NextResponse.json({ message: 'Hello from saved songs to db route' }, { status: 200 });
+  } satisfies DatabaseSong)));
+  return NextResponse.json({ message: `${data.total} songs saved to database successfully` }, { status: 200 });
 }

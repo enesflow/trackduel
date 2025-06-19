@@ -90,3 +90,13 @@ export interface SpotifyTrackItem {
  * Defines the overall structure as an array of SpotifyTrackItem objects.
  */
 export type SpotifyPlaylist = SpotifyTrackItem[];
+
+export type SpotifyPlaylistWithMetadata = {
+  href: string;
+  limit: number;
+  next: string | null;
+  offset: number;
+  previous: string | null;
+  total: number;
+  items: SpotifyTrackItem[];
+}
