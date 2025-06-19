@@ -8,6 +8,7 @@ export type UserContextType = {
   current: User | null;
   loading: boolean;
   loginWithSpotify: () => void;
+  loginWithGoogle: () => void;
   logout: () => Promise<void>;
   getSession: () => Promise<Models.Session | null>;
 };
@@ -15,6 +16,7 @@ const UserContext = createContext<UserContextType>({
   current: null,
   loading: false,
   loginWithSpotify: () => {},
+  loginWithGoogle: () => {},
   logout: async () => {},
   getSession: async () => null,
 });
@@ -59,8 +61,8 @@ export function UserProvider(props: UserProviderProps) {
     }
   }
 
-  async function loginWithSpotify() {
-    await account.createOAuth2Session(
+  function loginWithSpotify() {
+    account.createOAuth2Session(
       OAuthProvider.Spotify,
       "http://localhost:3000/app/add",
       "http://localhost:3000/404",
@@ -68,9 +70,18 @@ export function UserProvider(props: UserProviderProps) {
     );
   }
 
+  function loginWithGoogle() {
+    account.createOAuth2Session(
+      OAuthProvider.Google,
+      "http://localhost:3000/app/add",
+      "http://localhost:3000/404"
+    );
+  }
+
   async function getSession() {
     try {
       const session = await account.getSession("current");
+      console.log("Current session:", session);
       return session;
     } catch (err) {
       console.error("Error fetching current session:", err);
@@ -89,6 +100,7 @@ export function UserProvider(props: UserProviderProps) {
         logout,
         loading,
         loginWithSpotify,
+        loginWithGoogle,
         getSession,
       }}
     >

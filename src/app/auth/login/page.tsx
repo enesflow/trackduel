@@ -29,9 +29,7 @@ export default function Login() {
           <Button
             variant="outline"
             className="w-full py-6 text-lg flex items-center justify-center gap-3 border-gray-300 hover:bg-gray-50 transition-colors"
-            onClick={async () => {
-              await user.loginWithSpotify();
-            }}
+            onClick={user.loginWithSpotify}
           >
             <SiSpotify className="h-6 w-6 text-green-500" />
             Sign in with Spotify
@@ -39,7 +37,7 @@ export default function Login() {
           <Button
             variant="outline"
             className="w-full py-6 text-lg flex items-center justify-center gap-3 border-gray-300"
-            disabled
+            onClick={user.loginWithGoogle}
           >
             <SiGoogle className="h-6 w-6 text-blue-500" />
             Sign in with Google
