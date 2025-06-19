@@ -23,14 +23,14 @@ export function useUser() {
   return useContext(UserContext);
 }
 
-export function useLoggedInUser() {
+export function useLoggedInUser(): UserContextType & { current: User } {
   const user = useUser();
   if (user.loading) {
     throw new Error("User context is still loading");
   } else if (!user.current) {
     throw new Error("User is not logged in");
   }
-  return user;
+  return user as UserContextType & { current: User };
 }
 
 interface UserProviderProps {

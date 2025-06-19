@@ -30,6 +30,8 @@ export default function HomePage() {
           <li key={song}>{song}</li>
         ))}
       </ul>
+      <hr />
+      <a href="/app/songs">Go to Songs Page</a>
     </div>
   );
 }
