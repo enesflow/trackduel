@@ -18,25 +18,32 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
     throw new Error("No songs provided to save to the database.");
   }
 
-  const results = await Promise.allSettled(
-    songs.map((song) => {
-      return adminDatabases.createDocument(
-        "db",
-        "songs",
-        ID.unique(),
-        {
-          ...song,
-          user_id: userID,
-        },
-        [
-          Permission.read(Role.user(userID)),
-          Permission.update(Role.user(userID)),
-          Permission.delete(Role.user(userID)),
-        ],
-      );
-    })
-  );
+  // process in batches to limit concurrency
+  const BATCH_SIZE = 20;
+  let successCount = 0;
 
-  const successCount = results.filter(result => result.status === 'fulfilled').length;
+  for (let i = 0; i < songs.length; i += BATCH_SIZE) {
+    const batch = songs.slice(i, i + BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map((song) =>
+        adminDatabases.createDocument(
+          "db",
+          "songs",
+          ID.unique(),
+          {
+            ...song,
+            user_id: userID,
+          },
+          [
+            Permission.read(Role.user(userID)),
+            Permission.update(Role.user(userID)),
+            Permission.delete(Role.user(userID)),
+          ],
+        )
+      )
+    );
+    successCount += results.filter(r => r.status === 'fulfilled').length;
+  }
+
   return successCount;
 }
