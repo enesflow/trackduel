@@ -158,7 +158,7 @@ export default function PlayPage() {
     songs[firstIdx!].elo = newFirstElo;
     songs[secondIdx!].elo = newSecondElo;
     setSongs([...songs]);
-    toast.info(
+    /* toast.info(
       <div>
         <div className="font-bold">Great choice!</div>
         <div>
@@ -170,7 +170,7 @@ export default function PlayPage() {
           )}
         </div>
       </div>
-    );
+    ); */
     pickTwoRandomSongs();
   }
 
