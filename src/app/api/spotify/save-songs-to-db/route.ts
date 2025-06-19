@@ -1,6 +1,6 @@
 import { MISSING_TOKEN, nextError } from '@/lib/errors';
 import { getAndVerifyProviderAccessTokenFromHeader } from "@/lib/getProviderAccessTokenFromSessionHeader";
-import { saveSongsToDB } from '@/lib/saveSongs';
+import { saveSongsToDB } from '@/lib/saveSongsToDB';
 import { fetchSpotifyAPI } from '@/lib/spotify';
 import { SpotifyPlaylistWithMetadata } from '@/types/spotify';
 import { NextResponse } from 'next/server';
@@ -15,7 +15,8 @@ export async function GET(request: Request) {
   const successCount = await saveSongsToDB(userID, data.items.map(item => {
     return {
       user_id: userID,
-      spotify_id: item.track.id,
+      provider_id: item.track.id,
+      provider: 'spotify',
       album_name: item.track.album.name,
       artists: item.track.artists.map((artist) => artist.name).join(', '),
       elo: 1000,

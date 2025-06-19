@@ -1,7 +1,5 @@
-import { UserContextType } from "./UserContext";
 import { fetchNextJSAPIWithToken } from '@/lib/fetch';
-import { adminDatabases, DatabaseInputSong } from '@/lib/appwriteAdmin';
-import { ID, Permission, Role } from "node-appwrite";
+import { UserContextType } from "./UserContext";
 
 /**
  * Makes a request to save songs from the user's music provider with the API token.
@@ -29,32 +27,4 @@ export async function saveSongs(
   else {
     throw new Error("Unsupported provider for saving songs.");
   }
-}
-
-export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) {
-  if (!songs || songs.length === 0) {
-    throw new Error("No songs provided to save to the database.");
-  }
-
-  const results = await Promise.allSettled(
-    songs.map((song) => {
-      return adminDatabases.createDocument(
-        "db",
-        "songs",
-        ID.unique(),
-        {
-          ...song,
-          user_id: userID,
-        },
-        [
-          Permission.read(Role.user(userID)),
-          Permission.update(Role.user(userID)),
-          Permission.delete(Role.user(userID)),
-        ],
-      );
-    })
-  );
-
-  const successCount = results.filter(result => result.status === 'fulfilled').length;
-  return successCount;
 }
