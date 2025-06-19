@@ -243,7 +243,7 @@ export default function PlayPage() {
                 <Card
                   key={song.$id}
                   onClick={() => win(idx === 0 ? "first" : "second")}
-                  className="cursor-pointer transition-all duration-300 hover:scale-105"
+                  className="cursor-pointer transition-all duration-300 hover:scale-105 pt-0"
                 >
                   <CardHeader className="p-0 relative">
                     <Image
