@@ -337,11 +337,7 @@ export default function PlayPage() {
                           return song.provider_id;
                         } else if (song.provider === "spotify") {
                           return await getVideoIDFromSearchQuery(
-                            song.name +
-                              " - " +
-                              song.artists +
-                              " - " +
-                              song.album_name,
+                            `${song.name} - ${song.artists}`,
                             user
                           );
                         } else {
