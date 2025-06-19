@@ -24,6 +24,6 @@ export async function fetchYouTubeAPI<T>(
 }
 
 export function buildYoutubeEmbedUrl(videoId: string): string {
-  // Constructs a YouTube embed URL with the given video ID.
-  return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&mute=1`;
+  // Constructs a YouTube embed URL with the given video ID, starting at 30s.
+  return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&mute=1&start=30`;
 }
