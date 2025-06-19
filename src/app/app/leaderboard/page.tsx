@@ -1,9 +1,8 @@
 "use client";
 
-import { useSongs } from "@/lib/SongsContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Trophy, Music } from "lucide-react";
+import { useSongs } from "@/lib/SongsContext";
+import { Trophy } from "lucide-react";
 import Image from "next/image";
 import { useEffect } from "react";
 
@@ -122,12 +121,6 @@ export default function LeaderboardPage() {
                           <p className="text-lg text-gray-700 font-medium truncate">
                             {song.artists}
                           </p>
-                          <Badge
-                            variant="secondary"
-                            className="block max-w-full text-xs sm:text-sm mt-1 truncate"
-                          >
-                            {song.album_name}
-                          </Badge>
                         </div>
                       </div>
 
