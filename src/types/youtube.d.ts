@@ -1,47 +1,30 @@
-/**
- * Represents the overall response from the YouTube API for a search list request.
- */
+// Types for YouTube search list response (minimal, based on provided object)
+
 export interface YoutubeSearchListResponse {
-  kind: "youtube#searchListResponse";
+  kind: 'youtube#searchListResponse';
   etag: string;
   nextPageToken?: string;
   regionCode: string;
-  pageInfo: PageInfo;
+  pageInfo: YoutubeSearchPageInfo;
   items: YoutubeSearchResult[];
 }
 
-/**
- * Represents a single search result item from the YouTube API.
- */
-export interface YoutubeSearchResult {
-  kind: "youtube#searchResult";
-  etag: string;
-  id: YoutubeSearchResultId;
-  snippet: YoutubeSearchSnippet;
+export interface YoutubeSearchPageInfo {
+  totalResults: number;
+  resultsPerPage: number;
 }
 
-/**
- * Identifies the resource associated with the search result (e.g., video, channel, playlist).
- */
+export interface YoutubeSearchResult {
+  kind: 'youtube#searchResult';
+  etag: string;
+  id: YoutubeSearchResultId;
+}
+
 export interface YoutubeSearchResultId {
-  kind: "youtube#video" | "youtube#channel" | "youtube#playlist";
+  kind: 'youtube#video' | 'youtube#channel' | 'youtube#playlist';
   videoId?: string;
   channelId?: string;
   playlistId?: string;
-}
-
-/**
- * Contains snippet information for a search result item.
- */
-export interface YoutubeSearchSnippet {
-  publishedAt: string;
-  channelId: string;
-  title: string;
-  description: string;
-  thumbnails: Thumbnails;
-  channelTitle: string;
-  liveBroadcastContent: string;
-  publishTime: string;
 }
 /**
  * Represents the overall response from the YouTube API for a playlist item list request.

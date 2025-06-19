@@ -7,14 +7,14 @@ import { NextResponse } from 'next/server';
 export const runtime = "edge";
 
 export async function GET(request: Request) {
-  const { providerAccessToken, userID } = await getAndVerifyProviderAccessTokenFromHeader(request.headers);
+  const { providerAccessToken } = await getAndVerifyProviderAccessTokenFromHeader(request.headers);
   if (!providerAccessToken) return nextError(MISSING_TOKEN);
   const searchQuery = new URL(request.url).searchParams.get('query');
   if (!searchQuery) return nextError(MISSING_QUERY);
 
   // search for youtube videos for the query, get the first one
   const searchResponse = await fetchYouTubeAPI<YoutubeSearchListResponse>(
-    `/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(searchQuery)}`,
+    `/search?part=id&type=video&maxResults=1&q=${encodeURIComponent(searchQuery)}`,
     providerAccessToken
   );
   if (!searchResponse.items || searchResponse.items.length === 0) {
