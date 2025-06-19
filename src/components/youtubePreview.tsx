@@ -53,6 +53,7 @@ export function YouTubePreview({ previewUrl }: Props) {
               setReady(true);
               e.target.unMute();
               if (autoplay) {
+                e.target.seekTo(30, true);
                 e.target.playVideo();
               }
               resolve();
@@ -86,6 +87,7 @@ export function YouTubePreview({ previewUrl }: Props) {
       return;
     }
     // subsequent plays
+    playerRef.current.seekTo(30, true);
     playerRef.current.playVideo();
   };
 
