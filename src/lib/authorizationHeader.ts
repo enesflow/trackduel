@@ -25,7 +25,6 @@ export function getTokenFromAuthHeader(headers: Headers): { type: string; token:
   if (!authHeader) {
     return null;
   }
-  // Match "Bearer <token>", "Basic <token>", or "Session <token>"
   const match = authHeader.match(/^(Bearer|Basic|Session)\s+(.+)$/i);
   if (!match) {
     return null;
