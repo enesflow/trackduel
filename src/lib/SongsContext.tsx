@@ -15,6 +15,7 @@ type SongsContextType = {
   setSongs: React.Dispatch<React.SetStateAction<DatabaseSong[]>>;
   loading: boolean;
   refreshSongs: () => Promise<void>;
+  sortSongsByElo: () => void;
 };
 
 const SongsContext = createContext<SongsContextType | undefined>(undefined);
@@ -39,12 +40,20 @@ export const SongsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const sortSongsByElo = () => {
+    setSongs((prevSongs) =>
+      [...prevSongs].sort((a, b) => (b.elo ?? 0) - (a.elo ?? 0))
+    );
+  };
+
   useEffect(() => {
     refreshSongs();
   }, [user.current]);
 
   return (
-    <SongsContext.Provider value={{ songs, setSongs, loading, refreshSongs }}>
+    <SongsContext.Provider
+      value={{ songs, setSongs, loading, refreshSongs, sortSongsByElo }}
+    >
       {children}
     </SongsContext.Provider>
   );
