@@ -12,19 +12,16 @@ export async function saveSongs(
   if (!session || !session.provider) {
     throw new Error("User session is not valid or does not have a provider.");
   }
-  if (session.provider === "spotify") {
-    return await fetchNextJSAPIWithToken<string[]>(
-      "/spotify/save-songs-to-db",
-      user
-    );
-  }
-  else if (session.provider === "google") {
-    return await fetchNextJSAPIWithToken<string[]>(
-      "/youtube/save-songs-to-db",
-      user
-    );
-  }
-  else {
+  const url = session.provider === "spotify"
+    ? "/spotify/save-songs-to-db"
+    : session.provider === "google"
+      ? "/youtube/save-songs-to-db"
+      : null;
+  if (!url) {
     throw new Error("Unsupported provider for saving songs.");
   }
+  return await fetchNextJSAPIWithToken<string[]>(
+    url,
+    user
+  );
 }
