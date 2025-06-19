@@ -44,6 +44,8 @@ export async function GET(request: Request) {
       elo: 1000,
       image_url: item.track.album.images[0]?.url || '',
       name: item.track.name,
+      // preview_url: item.track.preview_url || undefined,
+      // Spotify API deprecated the preview_url field, so we can leave it out
     };
   }));
 

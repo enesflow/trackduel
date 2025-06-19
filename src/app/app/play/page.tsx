@@ -16,6 +16,8 @@ import { useEffect, useRef, useState } from "react";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
 import { useSongs } from "@/lib/SongsContext";
+import YouTubePreview from "@/components/youtubePreview";
+import { buildYoutubeEmbedUrl } from "@/lib/youtube";
 // -------------------------------------------------
 
 export default function PlayPage() {
@@ -319,6 +321,11 @@ export default function PlayPage() {
                       <Rocket className="m-1" />
                       Boost!
                     </Button>
+                    {song.provider === "google" && (
+                      <YouTubePreview
+                        previewUrl={buildYoutubeEmbedUrl(song.provider_id)}
+                      />
+                    )}
                   </CardFooter>
                 </Card>
               );
