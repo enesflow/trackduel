@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { fetchNextJSAPIWithToken } from "@/lib/fetch";
 import { useSongs } from "@/lib/SongsContext";
-import { fetchNextJSAPIForSpotify } from "@/lib/spotify";
 import { useLoggedInUser } from "@/lib/UserContext";
 import {
   Check,
@@ -30,7 +30,7 @@ export default function AddSongsPage() {
   const startTransfer = async () => {
     setTransferState("loading");
     try {
-      const response = await fetchNextJSAPIForSpotify<string[]>(
+      const response = await fetchNextJSAPIWithToken<string[]>(
         "save-songs-to-db",
         user
       );
