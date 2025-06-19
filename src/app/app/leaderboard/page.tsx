@@ -4,15 +4,30 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSongs } from "@/lib/SongsContext";
 import { Trophy } from "lucide-react";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function LeaderboardPage() {
   const { songs, loading, sortSongsByElo } = useSongs();
+  const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
     sortSongsByElo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+          document.documentElement.scrollHeight - 100 &&
+        displayCount < songs.length
+      ) {
+        setDisplayCount((prev) => Math.min(prev + 10, songs.length));
+      }
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [displayCount, songs.length]);
 
   if (loading) {
     return (
@@ -82,7 +97,7 @@ export default function LeaderboardPage() {
         </div>
 
         <div className="space-y-4">
-          {songs.map((song, idx) => {
+          {songs.slice(0, displayCount).map((song, idx) => {
             const rank = idx + 1;
             const adjusted = song.elo - baseline;
             const percentage =

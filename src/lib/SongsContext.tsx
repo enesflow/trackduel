@@ -1,14 +1,15 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
 import { useLoggedInUser } from "@/lib/UserContext";
 import { Query } from "appwrite";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { MAX_SONGS_FOR_USER } from "./constants";
 
 type SongsContextType = {
   songs: DatabaseSong[];
@@ -32,7 +33,7 @@ export const SongsProvider = ({ children }: { children: ReactNode }) => {
       const res = await databases.listDocuments("db", "songs", [
         Query.equal("user_id", user.current.$id),
         Query.orderDesc("elo"),
-        Query.limit(50),
+        Query.limit(MAX_SONGS_FOR_USER),
       ]);
       setSongs(res.documents as unknown as DatabaseSong[]);
     } finally {
