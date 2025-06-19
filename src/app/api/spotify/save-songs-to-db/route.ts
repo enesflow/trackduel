@@ -13,15 +13,6 @@ export async function GET(request: Request) {
     '/me/tracks?limit=50',
     providerAccessToken
   );
-  /* await adminDatabases.upsertDocuments("db", "songs", data.items.map((item) => ({
-    user_id: userID,
-    spotify_id: item.track.id,
-    album_name: item.track.album.name,
-    artists: item.track.artists.map((artist) => artist.name).join(', '),
-    elo: 0, // Default ELO value, can be updated later
-    image_url: item.track.album.images[0]?.url || '',
-    name: item.track.name,
-  } satisfies DatabaseSong))); */
   const results = await Promise.allSettled(
     data.items.map((item) => {
       const song: DatabaseSong = {
