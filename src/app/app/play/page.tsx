@@ -16,6 +16,7 @@ import { buildYoutubeEmbedUrl } from "@/lib/youtube";
 // -------------------------------------------------
 
 export default function PlayPage() {
+  const [duelCount, setDuelCount] = useState(0);
   const { toast } = useToast();
   const { songs, setSongs, loading, sortSongsByElo } = useSongs();
   const [pickedSongs, setPickedSongs] = useState<[number, number] | []>([]);
@@ -171,6 +172,7 @@ export default function PlayPage() {
     songs[secondIdx!].elo = newSecondElo;
     setSongs([...songs]);
     pickTwoRandomSongs();
+    setDuelCount((prev) => prev + 1);
   }
 
   async function removeSong(songId: string) {
@@ -257,6 +259,14 @@ export default function PlayPage() {
           </div>
           <p className="text-gray-600 text-lg">
             Click on your favorite song to make your selection
+          </p>
+
+          <p className="text-gray-500 text-sm mt-2">
+            {duelCount > 0
+              ? `You've made ${duelCount} ${
+                  duelCount === 1 ? "choice" : "choices"
+                } so far.`
+              : "Start by picking two songs!"}
           </p>
         </div>
 
