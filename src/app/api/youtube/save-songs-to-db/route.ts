@@ -1,16 +1,24 @@
 import { MISSING_TOKEN, nextError } from '@/lib/errors';
 import { getAndVerifyProviderAccessTokenFromHeader } from "@/lib/getProviderAccessTokenFromSessionHeader";
 import { fetchYouTubeAPI } from '@/lib/youtube';
+import type { YoutubePlaylistItemListResponse } from '@/types/youtube.d.ts';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   const { providerAccessToken, userID } = await getAndVerifyProviderAccessTokenFromHeader(request.headers);
   if (!providerAccessToken) return nextError(MISSING_TOKEN);
-  const data = await fetchYouTubeAPI<any>(
-    '/videos?part=snippet,contentDetails,statistics&myRating=like&maxResults=50',
+  const data = await fetchYouTubeAPI<YoutubePlaylistItemListResponse>(
+    '/playlistItems?part=snippet,contentDetails&playlistId=LM&maxResults=2',
     providerAccessToken
   );
-  /* const results = await Promise.allSettled(
+
+  console.log("YouTube API data:", JSON.stringify(data, null, 2));
+  const successCount = -1;
+  return NextResponse.json({ message: `${successCount} songs saved to database successfully` }, { status: 200 });
+}
+
+
+/* const results = await Promise.allSettled(
     data.items.map((item) => {
       const song: DatabaseInputSong = {
         user_id: userID,
@@ -35,7 +43,3 @@ export async function GET(request: Request) {
     })
   );
   const successCount = results.filter(result => result.status === 'fulfilled').length; */
-  console.log("YouTube API data:", data);
-  const successCount = -1;
-  return NextResponse.json({ message: `${successCount} songs saved to database successfully` }, { status: 200 });
-}
