@@ -99,7 +99,7 @@ export default function AddSongsPage() {
             </div>
             <CardDescription>
               Import all your saved songs and liked tracks from{" "}
-              {getCardDescription(user.session.provider)} to your
+              {getCardDescription(user.session.provider)}
               <br />
               To import from{" "}
               {user.session.provider !== "spotify" &&
