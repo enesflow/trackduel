@@ -1,5 +1,5 @@
 import { adminDatabases, DatabaseInputSong } from '@/lib/appwriteAdmin';
-import { ID, Permission, Role } from 'node-appwrite';
+import { ID, Permission, Query, Role } from 'node-appwrite';
 
 /**
  * THIS IS SUPPOSED TO BE CALLED ON THE SERVER. Saves an array of songs to the database for a specific user.
@@ -17,24 +17,40 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
   if (!songs || songs.length === 0) {
     throw new Error("No songs provided to save to the database.");
   }
-  // New efficient implementation
-  const result = await adminDatabases.createDocument(
+
+  // get user's current songs
+  const currentSongs = await adminDatabases.listDocuments(
     "db",
-    "batch",
-    ID.unique(),
-    {
-      user_id: userID,
-      songs: songs.map(song => ({
-        ...song,
-        $id: ID.unique(), // Ensure each song has a unique ID
-      })) satisfies (DatabaseInputSong & { $id: string })[],
-    },
-    [Permission.read(Role.user(userID)),
-    Permission.update(Role.user(userID)),
-    Permission.delete(Role.user(userID))],
+    "songs",
+    [Query.equal("user_id", userID)],
+  );
+  const currentSongProviderIDs = new Set(
+    currentSongs.documents.map(song => song.provider_id),
   );
 
-  console.log("Batch save successful");
-  return result.songs.length;
+  const songsWithIDs = songs
+    .filter(song => !currentSongProviderIDs.has(song.provider_id)) // Filter out songs that already exist
+    .map(song => ({
+      ...song,
+      $id: ID.unique(),
+    })) satisfies (DatabaseInputSong & { $id: string })[];
+  try {
+    const result = await adminDatabases.createDocument(
+      "db",
+      "batch",
+      ID.unique(),
+      {
+        user_id: userID,
+        songs: songsWithIDs,
+      },
+      [Permission.read(Role.user(userID)),
+      Permission.update(Role.user(userID)),
+      Permission.delete(Role.user(userID))],
+    );
+    return result.songs.length; // Return the number of songs saved
+  } catch (error) {
+    console.log("Error saving songs to DB:", error);
+    throw new Error(`Failed to save songs to the database: ${error}`);
+  }
 
 }
