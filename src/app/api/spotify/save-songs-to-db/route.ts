@@ -5,6 +5,8 @@ import { fetchSpotifyAPI } from '@/lib/spotify';
 import { SpotifyPlaylistWithMetadata } from '@/types/spotify';
 import { NextResponse } from 'next/server';
 
+export const runtime = "edge";
+
 export async function GET(request: Request) {
   const { providerAccessToken, userID } = await getAndVerifyProviderAccessTokenFromHeader(request.headers);
   if (!providerAccessToken) return nextError(MISSING_TOKEN);
