@@ -31,7 +31,7 @@ export default function AddSongsPage() {
     setTransferState("loading");
     try {
       const response = await fetchNextJSAPIWithToken<string[]>(
-        "save-songs-to-db",
+        "/spotify/save-songs-to-db",
         user
       );
       console.log("Response from save-songs-to-db:", response);
