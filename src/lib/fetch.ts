@@ -18,7 +18,7 @@ export async function fetchNextJSAPIWithToken<T>(
   if (!tokenExpiry || (new Date(tokenExpiry).getTime() - Date.now()) < 60 * 1000) {
     session = await account.updateSession("current");
   }
-  const response = await fetch(`/api/${name}`, {
+  const response = await fetch(`/api${name}`, {
     headers: {
       ...getAuthorizationHeader(session.providerAccessToken),
       userID: userContext.current.$id,
