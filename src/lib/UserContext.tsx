@@ -64,8 +64,8 @@ export function UserProvider(props: UserProviderProps) {
   function loginWithSpotify() {
     account.createOAuth2Session(
       OAuthProvider.Spotify,
-      "http://localhost:3000/app/add",
-      "http://localhost:3000/404",
+      `${process.env.NEXT_PUBLIC_HOST}/app/add`,
+      `${process.env.NEXT_PUBLIC_HOST}/404`,
       ["user-library-read"]
     );
   }
@@ -73,8 +73,8 @@ export function UserProvider(props: UserProviderProps) {
   function loginWithGoogle() {
     account.createOAuth2Session(
       OAuthProvider.Google,
-      "http://localhost:3000/app/add",
-      "http://localhost:3000/404",
+      `${process.env.NEXT_PUBLIC_HOST}/app/add`,
+      `${process.env.NEXT_PUBLIC_HOST}/404`,
       ["https://www.googleapis.com/auth/youtube.readonly"]
     );
   }

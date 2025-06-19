@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const { providerAccessToken, userID } = await getAndVerifyProviderAccessTokenFromHeader(request.headers);
   if (!providerAccessToken) return nextError(MISSING_TOKEN);
   const data = await fetchYouTubeAPI<YoutubePlaylistItemListResponse>(
-    '/playlistItems?part=snippet,contentDetails&playlistId=LM&maxResults=10',
+    '/playlistItems?part=snippet,contentDetails&playlistId=LM&maxResults=64',
     providerAccessToken
   );
   const successCount = await saveSongsToDB(userID, data.items.map(item => {
