@@ -101,23 +101,25 @@ export default function AddSongsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {transferState === "idle" && (
+            {/* Button for idle and loading: inline loader and disabled state, consistent layout */}
+            {transferState !== "success" && (
               <Button
                 onClick={startTransfer}
-                className="w-full py-6 text-lg  font-semibold"
+                disabled={transferState === "loading"}
+                className="w-full py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 variant="outline"
               >
-                Start Importing
-              </Button>
-            )}
-
-            {transferState === "loading" && (
-              <div className="space-y-4">
                 <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="font-medium">Importing your music...</span>
+                  {transferState === "loading" && (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  )}
+                  <span className="font-medium">
+                    {transferState === "loading"
+                      ? "Importing your music..."
+                      : "Start Importing"}
+                  </span>
                 </div>
-              </div>
+              </Button>
             )}
 
             {transferState === "success" && (
