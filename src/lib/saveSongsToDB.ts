@@ -1,5 +1,6 @@
 import { adminDatabases, DatabaseInputSong } from '@/lib/appwriteAdmin';
 import { ID, Permission, Role } from 'node-appwrite';
+import { safeID } from './safeID';
 
 /**
  * THIS IS SUPPOSED TO BE CALLED ON THE SERVER. Saves an array of songs to the database for a specific user.
@@ -25,11 +26,11 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
   for (let i = 0; i < songs.length; i += BATCH_SIZE) {
     const batch = songs.slice(i, i + BATCH_SIZE);
     const results = await Promise.allSettled(
-      batch.map((song) =>
+      batch.map(async (song) =>
         adminDatabases.createDocument(
           "db",
           "songs",
-          ID.unique(),
+          await safeID.unique(song),
           {
             ...song,
             user_id: userID,
