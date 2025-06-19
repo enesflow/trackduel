@@ -19,7 +19,20 @@ const adminUsers = new Users(adminClient);
 
 export { adminClient, adminAccount, adminDatabases, adminUsers };
 
+/**
+ * Represents a song entry in the database with associated metadata.
+ * The user_id and spotify_id together have a unique index to prevent duplicate entries by the same user.
+ *
+ * @property user_id - The unique identifier of the user who added the song.
+ * @property spotify_id - The Spotify ID of the song.
+ * @property name - The name/title of the song.
+ * @property artists - The artist(s) of the song, as a string.
+ * @property image_url - The URL to the song's album artwork or image.
+ * @property album_name - The name of the album the song belongs to.
+ * @property elo - The ELO rating of the song, used for ranking.
+ */
 export type DatabaseSong = {
+  user_id: string;
   spotify_id: string;
   name: string;
   artists: string;

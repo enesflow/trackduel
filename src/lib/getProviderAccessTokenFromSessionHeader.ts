@@ -2,7 +2,7 @@ import { adminAccount, adminUsers } from "./appwriteAdmin";
 import { getTokenFromAuthHeader } from "./authorizationHeader";
 
 
-export async function getProviderAccessTokenFromSessionHeader(
+export async function getAndVerifyProviderAccessTokenFromHeader(
   headers: Headers
 ) {
   const providerAccessToken = getTokenFromAuthHeader(headers);
@@ -24,5 +24,8 @@ export async function getProviderAccessTokenFromSessionHeader(
     throw new Error("401 Unauthorized: Session not found for the provided access token");
   }
   // If the session is found, return the provider access token
-  return session.providerAccessToken;
+  return {
+    providerAccessToken: providerAccessToken.token,
+    userID: userID,
+  };
 }
