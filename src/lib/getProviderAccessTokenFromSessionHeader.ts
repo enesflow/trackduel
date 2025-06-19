@@ -7,7 +7,6 @@ export async function getProviderAccessTokenFromSessionHeader(
 ) {
   const providerAccessToken = getTokenFromAuthHeader(headers);
   const userID = headers.get("userID");
-  console.log("Provider Access Token:", providerAccessToken);
   if (!providerAccessToken) {
     throw new Error("Missing provider access token in headers");
   } else if (!userID) {
@@ -22,8 +21,6 @@ export async function getProviderAccessTokenFromSessionHeader(
     (session) => session.providerAccessToken === providerAccessToken.token
   );
   if (!session) {
-    console.log("Looking for", providerAccessToken.token)
-    console.log("Listed", sessions.sessions.map(s => s.providerAccessToken))
     throw new Error("401 Unauthorized: Session not found for the provided access token");
   }
   // If the session is found, return the provider access token
