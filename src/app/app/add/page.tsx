@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { saveSongsToDB } from "@/lib/saveSongsToDB";
+import { saveSongs } from "@/lib/saveSongs";
 import { useSongs } from "@/lib/SongsContext";
 import { useLoggedInUser } from "@/lib/UserContext";
 import {
@@ -30,7 +30,7 @@ export default function AddSongsPage() {
   const startTransfer = async () => {
     setTransferState("loading");
     try {
-      const response = await saveSongsToDB(user);
+      const response = await saveSongs(user);
       console.log("Response from save-songs-to-db:", response);
       await songs.refreshSongs();
       setTransferState("success");
