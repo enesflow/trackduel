@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
 import { useLoggedInUser } from "@/lib/UserContext";
@@ -91,26 +92,26 @@ export default function PlayPage() {
             <strong>Pick the better song:</strong>
             <div>
               {songs[pickedSongs[0]!]?.name} - {songs[pickedSongs[0]!]?.artists}
-              <button
+              <Button
                 onClick={() => win("first")}
                 style={{ marginLeft: "10px" }}
               >
                 This one
-              </button>
+              </Button>
             </div>
             <br />
             <div>
               {songs[pickedSongs[1]!]?.name} - {songs[pickedSongs[1]!]?.artists}
-              <button
+              <Button
                 onClick={() => win("second")}
                 style={{ marginLeft: "10px" }}
               >
                 This one
-              </button>
+              </Button>
             </div>
           </div>
           <br />
-          <button onClick={pickTwoRandomSongs}>Pick New Songs</button>
+          <Button onClick={pickTwoRandomSongs}>Pick New Songs</Button>
         </div>
       )}
     </div>
