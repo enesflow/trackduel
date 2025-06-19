@@ -62,7 +62,7 @@ export function UserProvider(props: UserProviderProps) {
   async function loginWithSpotify() {
     await account.createOAuth2Session(
       OAuthProvider.Spotify,
-      "http://localhost:3000/app",
+      "http://localhost:3000/app/add",
       "http://localhost:3000/404",
       ["user-library-read"]
     );
