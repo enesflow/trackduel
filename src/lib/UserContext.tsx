@@ -52,7 +52,7 @@ export function UserProvider(props: UserProviderProps) {
 
       setUser(loggedIn);
     } catch (err) {
-      console.error("Error fetching user:", err);
+      //console.error("Error fetching user:", err);
       setUser(null);
     } finally {
       setLoading(false);
