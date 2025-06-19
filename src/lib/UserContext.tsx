@@ -10,6 +10,7 @@ export type UserContextType = {
   loginWithSpotify: () => void;
   loginWithGoogle: () => void;
   logout: () => Promise<void>;
+  session: Models.Session | null;
   getSession: () => Promise<Models.Session | null>;
 };
 const UserContext = createContext<UserContextType>({
@@ -18,6 +19,7 @@ const UserContext = createContext<UserContextType>({
   loginWithSpotify: () => {},
   loginWithGoogle: () => {},
   logout: async () => {},
+  session: null,
   getSession: async () => null,
 });
 
@@ -25,14 +27,18 @@ export function useUser() {
   return useContext(UserContext);
 }
 
-export function useLoggedInUser(): UserContextType & { current: User } {
+export function useLoggedInUser() {
   const user = useUser();
   if (user.loading) {
     throw new Error("User context is still loading");
   } else if (!user.current) {
     throw new Error("User is not logged in");
   }
-  return user as UserContextType & { current: User };
+  return user as UserContextType & {
+    current: User;
+    session: Models.Session;
+    loading: false;
+  };
 }
 
 interface UserProviderProps {
@@ -42,6 +48,7 @@ interface UserProviderProps {
 export function UserProvider(props: UserProviderProps) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Models.Session | null>(null);
 
   async function logout() {
     await account.deleteSession("current");
@@ -51,7 +58,7 @@ export function UserProvider(props: UserProviderProps) {
   async function init() {
     try {
       const loggedIn = await account.get();
-
+      await getSession();
       setUser(loggedIn);
     } catch (err) {
       //console.error("Error fetching user:", err);
@@ -82,9 +89,9 @@ export function UserProvider(props: UserProviderProps) {
 
   async function getSession() {
     try {
-      const session = await account.getSession("current");
-      console.log("Current session:", session);
-      return session;
+      const newSession = await account.getSession("current");
+      setSession(newSession);
+      return newSession;
     } catch (err) {
       console.error("Error fetching current session:", err);
       return null;
@@ -104,6 +111,7 @@ export function UserProvider(props: UserProviderProps) {
         loginWithSpotify,
         loginWithGoogle,
         getSession,
+        session,
       }}
     >
       {props.children}

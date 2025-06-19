@@ -19,7 +19,7 @@ export default function LeaderboardPage() {
     const onScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
-          document.documentElement.scrollHeight - 100 &&
+          document.documentElement.scrollHeight - 300 && // was 100, now 300
         displayCount < songs.length
       ) {
         setDisplayCount((prev) => Math.min(prev + 10, songs.length));

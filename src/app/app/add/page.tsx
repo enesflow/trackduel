@@ -12,7 +12,7 @@ import { saveSongs } from "@/lib/saveSongs";
 import { useSongs } from "@/lib/SongsContext";
 import { useLoggedInUser } from "@/lib/UserContext";
 import { Provider } from "@/types/provider";
-import { Check, Download, Loader2, Music } from "lucide-react";
+import { Check, Download, FileQuestion, Loader2, Music } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiSpotify, SiYoutubemusic } from "react-icons/si";
 
@@ -20,20 +20,36 @@ const Logos: Record<Provider, React.ReactNode> = {
   spotify: <SiSpotify className="w-6 h-6 text-green-500" />,
   google: <SiYoutubemusic className="w-6 h-6 text-red-500" />,
 };
+function getLogo(provider: Provider | string): React.ReactNode {
+  return (
+    Logos[provider as Provider] || (
+      <FileQuestion className="w-6 h-6 text-gray-500" />
+    )
+  );
+}
 const CardDescriptionProvider: Record<Provider, React.ReactNode> = {
   spotify: <strong className="text-green-600">Spotify</strong>,
   google: <strong className="text-red-600">YouTube Music</strong>,
 };
+function getCardDescription(provider: Provider | string): React.ReactNode {
+  return (
+    CardDescriptionProvider[provider as Provider] || (
+      <span className="text-gray-600">Spotify</span>
+    )
+  );
+}
 const Names: Record<Provider, string> = {
   spotify: "Spotify",
   google: "YouTube Music",
 };
+function getName(provider: Provider | string): string {
+  return Names[provider as Provider] || "Unknown Provider";
+}
 
 export default function AddSongsPage() {
   const [transferState, setTransferState] = useState<
     "idle" | "loading" | "success"
   >("idle");
-  const [sessionProvider, setSessionProvider] = useState<Provider | null>(null);
   const user = useLoggedInUser();
   const songs = useSongs();
 
@@ -51,17 +67,10 @@ export default function AddSongsPage() {
     }
   };
 
-  useEffect(() => {
-    user.getSession().then((session) => {
-      if (session && session.provider) {
-        setSessionProvider(session.provider as Provider);
-      }
-    });
-  }, [user]);
-
-  if (!sessionProvider) {
+  if (!user.session.provider) {
     return null;
   }
+
   return (
     <div className="min-h-screen p-4">
       <div className="w-full max-w-2xl mx-auto">
@@ -83,19 +92,19 @@ export default function AddSongsPage() {
         <Card className="mb-6">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              {Logos[sessionProvider]}
+              {getLogo(user.session.provider)}
               <CardTitle className="text-xl">
-                {Names[sessionProvider]} Library
+                {getName(user.session.provider)} Library
               </CardTitle>
             </div>
             <CardDescription>
               Import all your saved songs and liked tracks from{" "}
-              {Names[sessionProvider]}
+              {getCardDescription(user.session.provider)} to your
               <br />
               To import from{" "}
-              {sessionProvider !== "spotify" &&
+              {user.session.provider !== "spotify" &&
                 CardDescriptionProvider["spotify"]}
-              {sessionProvider !== "google" &&
+              {user.session.provider !== "google" &&
                 CardDescriptionProvider["google"]}
               , please log out and log back in with your Spotify account.
             </CardDescription>
