@@ -1,4 +1,4 @@
-import { Account, Client, Databases, Users } from "node-appwrite";
+import { Account, Client, Databases, Models, Users } from "node-appwrite";
 
 const NEXT_PUBLIC_APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
 const NEXT_PUBLIC_APPWRITE_PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT;
@@ -31,7 +31,7 @@ export { adminClient, adminAccount, adminDatabases, adminUsers };
  * @property album_name - The name of the album the song belongs to.
  * @property elo - The ELO rating of the song, used for ranking.
  */
-export type DatabaseSong = {
+export type DatabaseInputSong = {
   user_id: string;
   spotify_id: string;
   name: string;
@@ -40,3 +40,5 @@ export type DatabaseSong = {
   album_name: string;
   elo: number;
 }
+
+export type DatabaseSong = DatabaseInputSong & Models.Document;

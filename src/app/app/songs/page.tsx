@@ -1,14 +1,14 @@
 "use client";
 
 import { databases } from "@/lib/appwrite";
-import { DatabaseSong } from "@/lib/appwriteAdmin";
+import { DatabaseInputSong } from "@/lib/appwriteAdmin";
 import { useLoggedInUser } from "@/lib/UserContext";
 import { Query } from "appwrite";
 import { useEffect, useState } from "react";
 
 export default function SongsPage() {
   const user = useLoggedInUser();
-  const [songs, setSongs] = useState<DatabaseSong[]>([]);
+  const [songs, setSongs] = useState<DatabaseInputSong[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function SongsPage() {
         Query.orderDesc("elo"),
         Query.limit(50),
       ])
-      .then((res) => setSongs(res.documents as unknown as DatabaseSong[]))
+      .then((res) => setSongs(res.documents as unknown as DatabaseInputSong[]))
       .finally(() => setLoading(false));
   }, [user.current]);
 
@@ -32,7 +32,7 @@ export default function SongsPage() {
         <ul>
           {songs.map((song) => (
             <li key={song.spotify_id}>
-              {song.name} - {song.artists}
+              {song.name} - {song.artists} / ({song.elo})
             </li>
           ))}
         </ul>

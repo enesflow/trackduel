@@ -1,4 +1,4 @@
-import { adminDatabases, DatabaseSong } from '@/lib/appwriteAdmin';
+import { adminDatabases, DatabaseInputSong } from '@/lib/appwriteAdmin';
 import { MISSING_TOKEN, nextError } from '@/lib/errors';
 import { getAndVerifyProviderAccessTokenFromHeader } from "@/lib/getProviderAccessTokenFromSessionHeader";
 import { fetchSpotifyAPI } from '@/lib/spotify';
@@ -15,12 +15,12 @@ export async function GET(request: Request) {
   );
   const results = await Promise.allSettled(
     data.items.map((item) => {
-      const song: DatabaseSong = {
+      const song: DatabaseInputSong = {
         user_id: userID,
         spotify_id: item.track.id,
         album_name: item.track.album.name,
         artists: item.track.artists.map((artist) => artist.name).join(', '),
-        elo: 0, // Default ELO value, can be updated later
+        elo: 1000,
         image_url: item.track.album.images[0]?.url || '',
         name: item.track.name,
       };
