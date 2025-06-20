@@ -110,7 +110,7 @@ export default function LeaderboardPage() {
 
               return (
                 <Card
-                  key={song.$id}
+                  key={loading ? idx : song.id}
                   className={`transition-all duration-300 hover:shadow-lg bg-gradient-to-r ${getRankColor(
                     rank
                   )} border-2`}
