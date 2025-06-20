@@ -110,7 +110,7 @@ export default function LeaderboardPage() {
 
               return (
                 <Card
-                  key={loading ? idx : song.id}
+                  key={loading ? idx : song.$id}
                   className={`transition-all duration-300 hover:shadow-lg bg-gradient-to-r ${getRankColor(
                     rank
                   )} border-2`}
@@ -146,13 +146,13 @@ export default function LeaderboardPage() {
                                 )}
                               </span>
                             </h3>
-                            <p className="text-lg text-gray-700 font-medium truncate">
-                              {loading ? (
-                                <Skeleton className="h-4 w-32 mt-2 rounded" />
-                              ) : (
+                            {loading ? (
+                              <Skeleton className="h-4 w-32 mt-2 rounded" />
+                            ) : (
+                              <p className="text-lg text-gray-700 font-medium truncate">
                                 song.artists
-                              )}
-                            </p>
+                              </p>
+                            )}
                           </div>
                         </div>
 
