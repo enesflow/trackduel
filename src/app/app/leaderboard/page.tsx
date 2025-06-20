@@ -150,7 +150,7 @@ export default function LeaderboardPage() {
                               <Skeleton className="h-4 w-32 mt-2 rounded" />
                             ) : (
                               <p className="text-lg text-gray-700 font-medium truncate">
-                                song.artists
+                                {song.artists}
                               </p>
                             )}
                           </div>
