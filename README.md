@@ -9,6 +9,7 @@ TODO:
 - [ ] Import progress
 - [ ] "Blind Test" Mode - vote based on audio
 - [ ] Shareable "Top 5" Card
+- [ ] Make the image be replaced by the video when the user clicks play
 
 #### Long-term Goals
 

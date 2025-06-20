@@ -1,5 +1,5 @@
 import { SongsContextType } from '@/lib/SongsContext';
-import { Music } from 'lucide-react';
+
 import { databases } from '@/lib/appwrite';
 
 // This can happen if a song is added both from Spotify and YouTube Music
