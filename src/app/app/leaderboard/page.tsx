@@ -73,7 +73,7 @@ export default function LeaderboardPage() {
       case 1:
         return "from-yellow-50 to-yellow-100 border-yellow-200";
       case 2:
-        return "from-gray-50 to-gray-100 border-gray-200";
+        return "from-slate-100 to-slate-300 border-slate-400";
       case 3:
         return "from-amber-50 to-amber-100 border-amber-200";
       default:
