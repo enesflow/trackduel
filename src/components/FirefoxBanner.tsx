@@ -10,12 +10,11 @@ export default function FirefoxBanner() {
       typeof window !== "undefined" && /firefox/i.test(navigator.userAgent)
     );
   }, []);
+
+  if (!isFirefox) return null;
+
   return (
-    <div
-      className="bg-orange-500 text-white py-2 text-center font-semibold tracking-wide z-[9999] relative"
-      role="alert"
-      aria-live="polite"
-    >
+    <div className="bg-orange-500 text-white py-2 text-center font-semibold tracking-wide z-50 relative">
       Firefox is not supported. Please use a different browser.
     </div>
   );
