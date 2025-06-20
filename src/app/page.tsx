@@ -22,7 +22,9 @@ export default function Home() {
         <CardHeader className="space-y-2 text-center">
           <CardTitle className="text-4xl">TrackDuel</CardTitle>
           <CardDescription className="text-lg">
-            Battle your favorite songs, find the absolute best!
+            Battle your favorite songs,
+            <br />
+            find the absolute best!
           </CardDescription>
         </CardHeader>
 
