@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/components/ui/sonner";
 import { Merge, Music, Rocket, Shuffle, Trash } from "lucide-react";
@@ -223,7 +224,22 @@ export default function PlayPage() {
 
         {/* Song cards */}
         {songsCtx.loading ? (
-          <div className="text-center text-lg text-gray-500">Loading...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[0, 1].map((idx) => (
+              <Card key={idx} className="pt-0">
+                <CardHeader className="p-0 relative">
+                  <div className="relative w-full h-48 md:aspect-square md:h-auto overflow-hidden rounded-t-md">
+                    <Skeleton className="absolute inset-0 w-full h-full" />
+                  </div>
+                </CardHeader>
+                <CardFooter className="flex flex-row flex-wrap gap-4">
+                  <Skeleton className="h-10 w-full flex-1" />
+                  <Skeleton className="h-10 w-full flex-1" />
+                  <Skeleton className="h-10 w-full flex-1" />
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[0, 1].map((idx) => {
