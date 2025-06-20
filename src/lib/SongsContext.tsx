@@ -11,7 +11,7 @@ import React, {
 } from "react";
 import { MAX_SONGS_FOR_USER } from "./constants";
 
-type SongsContextType = {
+export type SongsContextType = {
   songs: DatabaseSong[];
   setSongs: React.Dispatch<React.SetStateAction<DatabaseSong[]>>;
   loading: boolean;

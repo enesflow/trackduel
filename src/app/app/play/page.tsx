@@ -11,16 +11,18 @@ import { useEffect, useRef, useState } from "react";
 import YouTubePreview from "@/components/youtubePreview";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
+import { updateELOsAfterWinning } from "@/lib/elo";
+import { deleteSongWithLowerELO } from "@/lib/play";
 import { useSongs } from "@/lib/SongsContext";
-import { getVideoIDFromSearchQuery } from "@/lib/youtube";
 import { useLoggedInUser } from "@/lib/UserContext";
+import { getVideoIDFromSearchQuery } from "@/lib/youtube";
 // -------------------------------------------------
 
 export default function PlayPage() {
   const user = useLoggedInUser();
   const [duelCount, setDuelCount] = useState(0);
   const { toast } = useToast();
-  const { songs, setSongs, loading, sortSongsByElo } = useSongs();
+  const songsCtx = useSongs();
   const [pickedSongs, setPickedSongs] = useState<[number, number] | []>([]);
   // Track pending deletions for undo support via ref
   const pendingDeletions = useRef<
@@ -30,11 +32,11 @@ export default function PlayPage() {
 
   // pick two random songs after loading
   useEffect(() => {
-    if (!loading && songs.length >= 2) {
-      pickTwoRandomSongs();
+    if (!songsCtx.loading && songsCtx.songs.length >= 2) {
+      setPickedSongs(pickTwoSongs(songsCtx.songs));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [songsCtx.loading]);
 
   // Helper: pick two indices from a song list, optionally keeping one fixed
   function pickTwoSongs(
@@ -49,7 +51,7 @@ export default function PlayPage() {
       if (tasteBreaker) {
         // pick one song from the first %25 and the second from the last %25
         // we gotta sort the songs first
-        sortSongsByElo();
+        songsCtx.sortSongsByElo();
         const percentage = 0.25;
         const firstQuarter = Math.floor(indices.length * percentage);
         const lastQuarter = Math.ceil(indices.length * (1 - percentage));
@@ -78,9 +80,6 @@ export default function PlayPage() {
       // Preserve order: fixedIdx first if it was first, else second
       return [fixedIdx, newIdx];
     }
-  }
-  function pickTwoRandomSongs() {
-    setPickedSongs(pickTwoSongs(songs));
   }
 
   // Helper: replace deleted song in picked pair
@@ -115,7 +114,7 @@ export default function PlayPage() {
     clearTimeout(pending.timerId);
     // remove from pending
     delete pendingDeletions.current[songId];
-    setSongs((prev) => {
+    songsCtx.setSongs((prev) => {
       const arr = [...prev];
       arr.splice(pending.index, 0, pending.song);
       return arr;
@@ -128,64 +127,15 @@ export default function PlayPage() {
     );
   }
 
-  async function win(who: "first" | "second", boosted: boolean = false) {
-    if (pickedSongs.length < 2) return;
-    const [firstIdx, secondIdx] = pickedSongs;
-    const firstSong = songs[firstIdx!];
-    const secondSong = songs[secondIdx!];
-    const K = boosted ? 64 : 32; // Double the K if boosted
-
-    const expected = (a: number, b: number) =>
-      1 / (1 + Math.pow(10, (b - a) / 400));
-
-    const eloNoiseRange = 5; // maximum ± range for random drift
-
-    const rawFirst =
-      firstSong.elo +
-      K * ((who === "first" ? 1 : 0) - expected(firstSong.elo, secondSong.elo));
-    const rawSecond =
-      secondSong.elo +
-      K *
-        ((who === "second" ? 1 : 0) - expected(secondSong.elo, firstSong.elo));
-
-    // apply random drift and ensure minimum of 100
-    const newFirstElo = Math.max(
-      100,
-      Math.round(rawFirst + (Math.random() * 2 - 1) * eloNoiseRange)
-    );
-    const newSecondElo = Math.max(
-      100,
-      Math.round(rawSecond + (Math.random() * 2 - 1) * eloNoiseRange)
-    );
-
-    // Optimistically update UI, then update DB in background
-    (async () => {
-      await Promise.allSettled([
-        databases.updateDocument("db", "songs", firstSong.$id, {
-          elo: newFirstElo,
-        }),
-        databases.updateDocument("db", "songs", secondSong.$id, {
-          elo: newSecondElo,
-        }),
-      ]);
-    })();
-
-    songs[firstIdx!].elo = newFirstElo;
-    songs[secondIdx!].elo = newSecondElo;
-    setSongs([...songs]);
-    pickTwoRandomSongs();
-    setDuelCount((prev) => prev + 1);
-  }
-
   async function removeSong(songId: string) {
-    const index = songs.findIndex((song) => song.$id === songId);
-    const songToDelete = songs[index];
+    const index = songsCtx.songs.findIndex((song) => song.$id === songId);
+    const songToDelete = songsCtx.songs[index];
     if (index === -1) return;
     // Optimistically update UI
-    const newSongs = songs.filter((song) => song.$id !== songId);
-    setSongs(newSongs);
+    const newSongs = songsCtx.songs.filter((song) => song.$id !== songId);
+    songsCtx.setSongs(newSongs);
     setPickedSongs(
-      replaceDeletedPickedSong(songs, newSongs, pickedSongs, songId)
+      replaceDeletedPickedSong(songsCtx.songs, newSongs, pickedSongs, songId)
     );
     // Schedule actual deletion
     const timerId = window.setTimeout(async () => {
@@ -218,34 +168,33 @@ export default function PlayPage() {
     );
   }
 
+  ///////////////////////////////////
+  //// ------ Refactored ------- ////
+  ///////////////////////////////////
+
+  async function win(winner: "first" | "second", boosted: boolean = false) {
+    if (pickedSongs.length < 2) return;
+    const { promise, newSongs } = updateELOsAfterWinning(
+      songsCtx,
+      pickedSongs as [number, number],
+      winner,
+      boosted ? 64 : 32
+    );
+    setPickedSongs(pickTwoSongs(newSongs));
+    setDuelCount((prev) => prev + 1);
+    await promise;
+  }
+
   async function mergeSongs() {
     // This can happen if a song is added both from Spotify and YouTube Music
     // remove the song with the lower ELO, pick two new songs
     if (pickedSongs.length < 2) return;
-    const [firstIdx, secondIdx] = pickedSongs;
-    const firstSong = songs[firstIdx!];
-    const secondSong = songs[secondIdx!];
-    if (!firstSong || !secondSong) return;
-    const songToKeep = firstSong.elo >= secondSong.elo ? firstSong : secondSong;
-    const songToDelete =
-      firstSong.elo < secondSong.elo ? firstSong : secondSong;
-    // optimistically update UI
-    const newSongs = songs.filter((song) => song.$id !== songToDelete.$id);
-    setSongs(newSongs);
-    setPickedSongs(pickTwoSongs(newSongs));
-    // remove from the db
-    (async () => {
-      await databases.deleteDocument("db", "songs", songToDelete.$id);
-    })();
-    toast.success(
-      <div>
-        <div className="font-bold">Songs merged</div>
-        <div>
-          The song “{songToDelete.name}” has been removed. You kept “
-          {songToKeep.name}”.
-        </div>
-      </div>
+    const { newSongs, promise } = deleteSongWithLowerELO(
+      songsCtx,
+      pickedSongs as [number, number]
     );
+    setPickedSongs(pickTwoSongs(newSongs));
+    await promise;
   }
 
   return (
@@ -273,12 +222,12 @@ export default function PlayPage() {
         </div>
 
         {/* Song cards */}
-        {loading ? (
+        {songsCtx.loading ? (
           <div className="text-center text-lg text-gray-500">Loading...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[0, 1].map((idx) => {
-              const song = songs[pickedSongs[idx]!];
+              const song = songsCtx.songs[pickedSongs[idx]!];
               if (!song) return null;
               return (
                 <Card
@@ -353,11 +302,13 @@ export default function PlayPage() {
         )}
 
         {/* Pick new songs button */}
-        {!loading && pickedSongs.length === 2 && (
+        {!songsCtx.loading && pickedSongs.length === 2 && (
           <div className="flex flex-col md:flex-row justify-center mt-6 gap-4 w-full max-w-xl mx-auto">
             <div className="flex-1 flex">
               <Button
-                onClick={pickTwoRandomSongs}
+                onClick={() => {
+                  setPickedSongs(pickTwoSongs(songsCtx.songs));
+                }}
                 variant="secondary"
                 className="w-full"
               >
