@@ -1,15 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/sonner";
 import { Merge, Music, Rocket, Shuffle, Trash } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 // --- new imports for database and user context ---
-import YouTubePreview from "@/components/youtubePreview";
+import YouTubePreview, {
+  YouTubePreviewHandle,
+} from "@/components/youtubePreview";
 import { databases } from "@/lib/appwrite";
 import { DatabaseSong } from "@/lib/appwriteAdmin";
 import { updateELOsAfterWinning } from "@/lib/elo";
@@ -17,7 +19,51 @@ import { deleteSongWithLowerELO } from "@/lib/play";
 import { useSongs } from "@/lib/SongsContext";
 import { useLoggedInUser } from "@/lib/UserContext";
 import { getVideoIDFromSearchQuery } from "@/lib/youtube";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+
+// Duration for each preview in ms
+const previewPlaybackDuration = 7000;
 // -------------------------------------------------
+
+// spinner with CSS animation
+function AutoplaySpinner({ duration }: { duration: number }) {
+  const r = 8;
+  const c = 2 * Math.PI * r;
+
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r={r} stroke="#000" strokeWidth="2" fill="none" />
+      <circle
+        cx="10"
+        cy="10"
+        r={r}
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="none"
+        style={{
+          strokeDasharray: c,
+          strokeDashoffset: c,
+          transform: "rotate(-90deg)",
+          transformOrigin: "50% 50%",
+          transition: `stroke-dashoffset ${duration}ms linear`,
+          animation: `progress ${duration}ms linear forwards`,
+        }}
+      />
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes progress {
+            from { stroke-dashoffset: ${c}; }
+            to { stroke-dashoffset: 0; }
+          }
+        `,
+        }}
+      />
+    </svg>
+  );
+}
 
 export default function PlayPage() {
   const user = useLoggedInUser();
@@ -29,6 +75,9 @@ export default function PlayPage() {
   const pendingDeletions = useRef<
     Record<string, { song: DatabaseSong; index: number; timerId: number }>
   >({});
+  const [autoplay, setAutoplay] = useState(false);
+  // cache resolved video IDs for previews
+  const [videoIds, setVideoIds] = useState<(string | null)[]>([]);
   // ----------------------------------------------
 
   // pick two random songs after loading
@@ -38,6 +87,32 @@ export default function PlayPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [songsCtx.loading]);
+
+  // fetch and cache video IDs once per pickedSongs change to avoid repeated API calls
+  useEffect(() => {
+    (async () => {
+      const ids: (string | null)[] = [];
+      for (let idx = 0; idx < (pickedSongs as number[]).length; idx++) {
+        const song = songsCtx.songs[pickedSongs[idx]];
+        if (!song) {
+          ids[idx] = null;
+          continue;
+        }
+        try {
+          if (song.provider === "google") ids[idx] = song.provider_id;
+          else if (song.provider === "spotify")
+            ids[idx] = await getVideoIDFromSearchQuery(
+              `${song.name} - ${song.artists}`,
+              user
+            );
+          else ids[idx] = null;
+        } catch {
+          ids[idx] = null;
+        }
+      }
+      setVideoIds(ids);
+    })();
+  }, [pickedSongs, songsCtx.songs]);
 
   // Helper: pick two indices from a song list, optionally keeping one fixed
   function pickTwoSongs(
@@ -198,6 +273,54 @@ export default function PlayPage() {
     await promise;
   }
 
+  const firstSongRef = useRef<YouTubePreviewHandle>(null);
+  const secondSongRef = useRef<YouTubePreviewHandle>(null);
+
+  // helper: sleep for ms
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  // helper: play first then second with proper async timing
+  const playPreview = async () => {
+    if (
+      pickedSongs.length < 2 ||
+      !firstSongRef.current ||
+      !secondSongRef.current
+    )
+      return;
+    await firstSongRef.current.play();
+    await sleep(previewPlaybackDuration);
+    await firstSongRef.current.stop();
+    await secondSongRef.current.play();
+    await sleep(previewPlaybackDuration);
+    await secondSongRef.current.stop();
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!autoplay) {
+        void firstSongRef.current?.stop();
+        void secondSongRef.current?.stop();
+        return;
+      }
+      // prewarm players to load iframes
+      if (firstSongRef.current && secondSongRef.current) {
+        await firstSongRef.current.play();
+        await firstSongRef.current.stop();
+        await secondSongRef.current.play();
+        await secondSongRef.current.stop();
+      }
+      while (!cancelled && autoplay) {
+        await playPreview();
+      }
+    })();
+    return () => {
+      cancelled = true;
+      void firstSongRef.current?.stop();
+      void secondSongRef.current?.stop();
+    };
+  }, [pickedSongs, autoplay]);
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-4xl space-y-8">
@@ -210,16 +333,23 @@ export default function PlayPage() {
             </h1>
           </div>
           <p className="text-gray-600 text-lg">
-            Click on your favorite song to make your selection
-          </p>
-
-          <p className="text-gray-500 text-sm mt-2">
             {duelCount > 0
               ? `You've made ${duelCount} ${
                   duelCount === 1 ? "choice" : "choices"
                 } so far.`
-              : "Start by picking two songs!"}
+              : "Start by picking a song below!"}
           </p>
+
+          <div className="flex items-center justify-center space-x-2 my-4">
+            <Switch
+              id="autoplay"
+              onCheckedChange={setAutoplay}
+              checked={autoplay}
+            />
+            <Label htmlFor="autoplay" className="text-sm">
+              Enable Autoplay
+            </Label>
+          </div>
         </div>
 
         {/* Song cards */}
@@ -297,18 +427,15 @@ export default function PlayPage() {
                       Boost!
                     </Button>
                     <YouTubePreview
-                      videoId={async () => {
-                        if (song.provider === "google") {
-                          return song.provider_id;
-                        } else if (song.provider === "spotify") {
-                          return await getVideoIDFromSearchQuery(
-                            `${song.name} - ${song.artists}`,
-                            user
-                          );
-                        } else {
-                          return null;
-                        }
-                      }}
+                      key={`preview-${song.$id}-at-${duelCount}`}
+                      videoId={() => videoIds[idx]}
+                      ref={idx === 0 ? firstSongRef : secondSongRef}
+                      buttonDisabled={autoplay}
+                      pauseIcon={
+                        autoplay ? (
+                          <AutoplaySpinner duration={previewPlaybackDuration} />
+                        ) : undefined
+                      }
                     />
                   </CardFooter>
                 </Card>
