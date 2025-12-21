@@ -311,14 +311,22 @@ export default function PlayPage() {
       if (videoIds.length !== 2) {
         return;
       }
+      // Wait for React to finish remounting YouTubePreview components
+      // This ensures refs point to the new components, not stale ones
+      await sleep(100);
+      if (cancelled) return;
+
       // prewarm players to load iframes
       if (firstSongRef.current && secondSongRef.current) {
         await firstSongRef.current.play();
+        if (cancelled) return;
         await firstSongRef.current.stop();
         await secondSongRef.current.play();
+        if (cancelled) return;
         await secondSongRef.current.stop();
       }
       while (!cancelled && autoplay) {
+        if (cancelled) return;
         await playPreview();
       }
     })();
@@ -434,7 +442,7 @@ export default function PlayPage() {
                     </Button>
                     <YouTubePreview
                       key={`preview-${song.$id}-${videoIds[idx] ?? 'pending'}`}
-                      videoId={() => videoIds[idx]}
+                      videoId={videoIds[idx]}
                       ref={idx === 0 ? firstSongRef : secondSongRef}
                       buttonDisabled={autoplay}
                       pauseIcon={

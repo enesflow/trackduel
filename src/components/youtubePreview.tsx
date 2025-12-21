@@ -17,8 +17,8 @@ export interface YouTubePreviewHandle {
 }
 
 type Props = {
-  /** Example: https://www.youtube.com/embed/M7lc1UVf-VE?enablejsapi=1&mute=1 */
-  videoId: () => Promise<string | null | undefined> | string | null | undefined; // function to fetch video ID or direct string
+  /** The YouTube video ID to play, or null/undefined if not yet loaded */
+  videoId: string | null | undefined;
   buttonDisabled?: boolean; // optional prop to disable the button
   playIcon?: ReactNode;
   pauseIcon?: ReactNode;
@@ -36,11 +36,8 @@ export const YouTubePreview = forwardRef<YouTubePreviewHandle, Props>(
     const [playing, setPlaying] = useState(false);
     const [ready, setReady] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [currentVideoId, setCurrentVideoId] = useState<
-      string | undefined | null
-    >(null);
-    // avoid retrying videoId fetch or player init on failure
-    const attemptedInit = useRef(false);
+    // Track the video ID that the current player is loaded with
+    const loadedVideoIdRef = useRef<string | null>(null);
 
     // load the YouTube IFrame API when needed
     const loadYT = () =>
@@ -57,32 +54,21 @@ export const YouTubePreview = forwardRef<YouTubePreviewHandle, Props>(
       });
 
     // instantiate player on first play; resolves when ready (and auto-plays if requested)
-    const createPlayer = (autoplay = false) =>
+    const createPlayer = (targetVideoId: string, autoplay = false) =>
       new Promise<void>(async (resolve) => {
-        attemptedInit.current = true;
         setLoading(true);
         await loadYT();
-        if (!holderRef.current) return resolve();
-        let id: string | null | undefined;
-        try {
-          id = await videoId();
-        } catch (e) {
-          console.warn("Failed to get videoId", e);
+        if (!holderRef.current) {
           setLoading(false);
-          setReady(false);
-          setPlaying(false);
           return resolve();
         }
-        if (!id) {
-          setLoading(false);
-          setReady(false);
-          setPlaying(false);
-          return resolve();
-        }
+
+        loadedVideoIdRef.current = targetVideoId;
+
         playerRef.current = new window.YT.Player(holderRef.current, {
           height: "390",
           width: "640",
-          videoId: id,
+          videoId: targetVideoId,
           playerVars: { mute: 0, rel: 0, playsinline: 1 },
           events: {
             onReady: (e) => {
@@ -111,29 +97,44 @@ export const YouTubePreview = forwardRef<YouTubePreviewHandle, Props>(
         });
       });
 
-    const play = async (): Promise<void> => {
-      if (!playerRef.current) {
-        // only attempt init once
-        if (!attemptedInit.current) {
-          await createPlayer(true);
-        } else {
-          return;
-        }
-        if (!playerRef.current) return;
+    // Destroy current player
+    const destroyPlayer = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
       }
-      if (!ready) {
-        // Don't retry if not ready
+      loadedVideoIdRef.current = null;
+      setReady(false);
+      setLoading(false);
+      setPlaying(false);
+    };
+
+    const play = async (): Promise<void> => {
+      // If no video ID, can't play
+      if (!videoId) return;
+
+      // If player exists but with wrong video, destroy it first
+      if (playerRef.current && loadedVideoIdRef.current !== videoId) {
+        destroyPlayer();
+      }
+
+      // Create player if needed
+      if (!playerRef.current) {
+        await createPlayer(videoId, true);
         return;
       }
-      playerRef.current.playVideo();
-      return;
+
+      // Player exists and is ready, just play
+      if (ready) {
+        playerRef.current.playVideo();
+      }
     };
 
     const stop = async (): Promise<void> => {
       if (timerRef.current) clearTimeout(timerRef.current);
       playerRef.current?.pauseVideo();
       setPlaying(false);
-      return;
     };
 
     const toggle = async (): Promise<void> => {
@@ -142,28 +143,27 @@ export const YouTubePreview = forwardRef<YouTubePreviewHandle, Props>(
 
     // initialize player without autoplay
     const init = async (): Promise<void> => {
-      if (!playerRef.current) {
-        await createPlayer(false);
+      if (!videoId) return;
+      if (!playerRef.current || loadedVideoIdRef.current !== videoId) {
+        if (playerRef.current) destroyPlayer();
+        await createPlayer(videoId, false);
       }
     };
 
-    // detect when videoId prop changes and reset player
+    // When videoId prop changes, destroy the old player
     useEffect(() => {
-      (async () => {
-        const id = await videoId();
-        if (id !== currentVideoId) {
-          if (playerRef.current) {
-            playerRef.current.destroy();
-            playerRef.current = null;
-          }
-          attemptedInit.current = false;
-          setCurrentVideoId(id);
-          setReady(false);
-          setLoading(false);
-          setPlaying(false);
-        }
-      })();
+      // If videoId changed and we have a player loaded with a different video, destroy it
+      if (playerRef.current && loadedVideoIdRef.current !== videoId) {
+        destroyPlayer();
+      }
     }, [videoId]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+      return () => {
+        destroyPlayer();
+      };
+    }, []);
 
     useImperativeHandle(ref, () => ({ play, stop, toggle, init }));
 
@@ -181,13 +181,13 @@ export const YouTubePreview = forwardRef<YouTubePreviewHandle, Props>(
           }}
           variant="default"
           size="icon"
-          disabled={buttonDisabled || loading}
+          disabled={buttonDisabled || loading || !videoId}
         >
           {loading
             ? loadingIcon ?? <Loader2 className="w-5 h-5 animate-spin" />
             : playing
-            ? pauseIcon ?? <Pause className="w-5 h-5" />
-            : playIcon ?? <Play className="w-5 h-5" />}
+              ? pauseIcon ?? <Pause className="w-5 h-5" />
+              : playIcon ?? <Play className="w-5 h-5" />}
         </Button>
       </>
     );
