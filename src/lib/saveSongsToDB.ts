@@ -40,20 +40,35 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
     console.warn(`User ${userID} has reached the maximum number of songs (${MAX_SONGS_FOR_USER}). No new songs will be saved.`);
     return 0; // No songs saved because the user has reached the limit
   }
+  const songsToSave = songsWithIDs.slice(0, totalSongsLeft);
+
+  if (songsToSave.length === 0) {
+    console.log(`No new songs to save for user ${userID}. All songs already exist in the database.`);
+    return 0;
+  }
+
+  const BATCH_SIZE = 100;
+  let savedCount = 0;
+
   try {
-    const result = await adminDatabases.createDocument(
-      "db",
-      "batch",
-      ID.unique(),
-      {
-        user_id: userID,
-        songs: songsWithIDs.slice(0, totalSongsLeft), // Limit to the number of songs left to save
-      },
-      [Permission.read(Role.user(userID)),
-      Permission.update(Role.user(userID)),
-      Permission.delete(Role.user(userID))],
-    );
-    return result.songs.length; // Return the number of songs saved
+    for (let i = 0; i < songsToSave.length; i += BATCH_SIZE) {
+      const chunk = songsToSave.slice(i, i + BATCH_SIZE);
+      const result = await adminDatabases.createDocument(
+        "db",
+        "batch",
+        ID.unique(),
+        {
+          user_id: userID,
+          songs: chunk,
+        },
+        [Permission.read(Role.user(userID)),
+        Permission.update(Role.user(userID)),
+        Permission.delete(Role.user(userID))],
+      );
+      savedCount += result.songs.length;
+      console.log(`Saved batch ${Math.floor(i / BATCH_SIZE) + 1}: ${result.songs.length} songs (total: ${savedCount})`);
+    }
+    return savedCount;
   } catch (error) {
     console.log("Error saving songs to DB:", error);
     throw new Error(`Failed to save songs to the database: ${error}`);

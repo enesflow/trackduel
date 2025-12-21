@@ -1,1 +1,1 @@
-export const MAX_SONGS_FOR_USER = 200; // Maximum number of songs to save for a user
+export const MAX_SONGS_FOR_USER = 500; // Maximum number of songs to save for a user
