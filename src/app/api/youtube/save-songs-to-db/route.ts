@@ -46,11 +46,12 @@ export async function GET(request: Request) {
       album_name: item.snippet.title,
       artists: removeTopicFromEnd(item.snippet.channelTitle),
       elo: 1000,
-      image_url: item.snippet.thumbnails.maxres?.url
-        || item.snippet.thumbnails.standard?.url
-        || item.snippet.thumbnails.high?.url
-        || item.snippet.thumbnails.medium?.url
-        || item.snippet.thumbnails.default.url,
+      image_url: item.snippet.thumbnails?.maxres?.url
+        || item.snippet.thumbnails?.standard?.url
+        || item.snippet.thumbnails?.high?.url
+        || item.snippet.thumbnails?.medium?.url
+        || item.snippet.thumbnails?.default?.url
+        || '',
       name: item.snippet.title,
     };
   }));
