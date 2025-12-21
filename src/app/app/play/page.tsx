@@ -90,6 +90,8 @@ export default function PlayPage() {
 
   // fetch and cache video IDs once per pickedSongs change to avoid repeated API calls
   useEffect(() => {
+    // Clear old IDs immediately so autoplay waits for fresh ones
+    setVideoIds([]);
     (async () => {
       const ids: (string | null)[] = [];
       for (let idx = 0; idx < (pickedSongs as number[]).length; idx++) {
@@ -304,6 +306,11 @@ export default function PlayPage() {
         void secondSongRef.current?.stop();
         return;
       }
+      // Wait for videoIds to be ready for the current pickedSongs
+      // videoIds should have 2 entries (even if null) when ready
+      if (videoIds.length !== 2) {
+        return;
+      }
       // prewarm players to load iframes
       if (firstSongRef.current && secondSongRef.current) {
         await firstSongRef.current.play();
@@ -320,7 +327,7 @@ export default function PlayPage() {
       void firstSongRef.current?.stop();
       void secondSongRef.current?.stop();
     };
-  }, [pickedSongs, autoplay]);
+  }, [pickedSongs, autoplay, videoIds]);
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-4xl space-y-8">
@@ -334,9 +341,8 @@ export default function PlayPage() {
           </div>
           <p className="text-gray-600 text-lg">
             {duelCount > 0
-              ? `You've made ${duelCount} ${
-                  duelCount === 1 ? "choice" : "choices"
-                } so far.`
+              ? `You've made ${duelCount} ${duelCount === 1 ? "choice" : "choices"
+              } so far.`
               : "Start by picking a song below!"}
           </p>
 
@@ -427,7 +433,7 @@ export default function PlayPage() {
                       Boost!
                     </Button>
                     <YouTubePreview
-                      key={`preview-${song.$id}-at-${duelCount}`}
+                      key={`preview-${song.$id}-${videoIds[idx] ?? 'pending'}`}
                       videoId={() => videoIds[idx]}
                       ref={idx === 0 ? firstSongRef : secondSongRef}
                       buttonDisabled={autoplay}
