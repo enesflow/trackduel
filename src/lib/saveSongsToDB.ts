@@ -23,7 +23,7 @@ export async function saveSongsToDB(userID: string, songs: DatabaseInputSong[]) 
   const currentSongs = await adminDatabases.listDocuments(
     "db",
     "songs",
-    [Query.equal("user_id", userID)],
+    [Query.equal("user_id", userID), Query.limit(MAX_SONGS_FOR_USER)],
   );
   const currentSongProviderIDs = new Set(
     currentSongs.documents.map(song => song.provider_id),
