@@ -388,7 +388,7 @@ export default function PlayPage() {
                           song.image_url ||
                           "/placeholder.svg?height=300&width=300"
                         }
-                        alt={`${song.album || "Album"} cover`}
+                        alt={`${song.album_name || "Album"} cover`}
                         fill
                         className="object-cover"
                         style={{ objectFit: "cover" }}
